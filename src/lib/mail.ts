@@ -9,7 +9,7 @@ export const sendTwoFactorTokenEmail = async (
   token: string
 ) => {
   await resend.emails.send({
-    from: "verify@armandovl.dev",
+    from: "no-reply@uniroom.app",
     to: email,
     subject: "Autenticación de 2 factores",
     html: `
@@ -55,7 +55,7 @@ export const sendVerificationEmail = async (
   const confirmLink = `${domain}/auth/new-verification?token=${token}`;
 
   await resend.emails.send({
-    from: "verify@armandovl.dev",
+    from: "no-reply@uniroom.app",
     to: email,
     subject: "Confirma tu dirección de correo electrónico",
     html: `
@@ -96,7 +96,7 @@ export const sendPasswordResetEmail = async (
 ) => {
   const resetLink = `${domain}/auth/new-password?token=${token}`
   await resend.emails.send({
-    from: "verify@armandovl.dev",
+    from: "no-reply@uniroom.app",
     to: email,
     subject: "Recupera tu contraseña",
     html: `
