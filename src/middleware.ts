@@ -53,7 +53,7 @@ export default auth((req) => {
 
     // Redirige al usuario a la página de login con un callback URL codificado.
     return Response.redirect(new URL(
-      `/auth/login?callbackUrl=${encodedCallbackUrl}`,
+      `/?callbackUrl=${encodedCallbackUrl}`,
       nextUrl
     ));
   }

@@ -63,11 +63,11 @@ const Settings = () => {
   };
 
   return (
-    <div className="mx-auto max-w-270 dark:bg-gray-900 dark:text-white">
+    <div className="mx-auto max-w-270 dark:bg-dark dark:text-white">
       <div className="grid grid-cols-5 gap-8">
         <div className="col-span-5 xl:col-span-3">
-          <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-            <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
+          <div className="rounded-sm border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
+            <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
               <h3 className="font-medium text-black dark:text-white">
                 Información de la cuenta
               </h3>
@@ -83,7 +83,7 @@ const Settings = () => {
                         <FormItem>
                           <FormLabel>Nombre</FormLabel>
                           <FormControl>
-                            <Input {...field} placeholder="John Doe" disabled={isPending} className="dark:bg-gray-800 dark:text-white" />
+                            <Input {...field} placeholder="John Doe" disabled={isPending} className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white"/>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -102,7 +102,8 @@ const Settings = () => {
                               placeholder="ejemplo@dominio.com"
                               type="email"
                               disabled={true}
-                              className="dark:bg-gray-800 dark:text-gray-500"
+                              className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white"
+                  
                             />
                           </FormControl>
                           <FormMessage />
@@ -150,7 +151,8 @@ const Settings = () => {
                                   placeholder="******"
                                   type="password"
                                   disabled={isPending}
-                                  className="dark:bg-gray-800 dark:text-white"
+                                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white"
+                  
                                 />
                               </FormControl>
                               <FormMessage />
@@ -208,7 +210,7 @@ const Settings = () => {
                   </div>
                   <FormError message={error} />
                   <FormSuccess message={success} />
-                  <Button disabled={isPending} type="submit" className="dark:bg-blue-600 dark:hover:bg-blue-700">
+                  <Button disabled={isPending} type="submit" className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90">
                     Guardar cambios
                   </Button>
                 </form>
@@ -217,8 +219,8 @@ const Settings = () => {
           </div>
         </div>
         <div className="col-span-5 xl:col-span-2">
-          <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-            <div className="border-b border-stroke px-7 py-4 dark:border-strokedark">
+          <div className="rounded-sm border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark">
+            <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
               <h3 className="font-medium text-black dark:text-white">Tu Foto</h3>
             </div>
             <div className="p-7">
@@ -241,12 +243,12 @@ const Settings = () => {
               </div>
               <div
                 id="FileUpload"
-                className="relative mb-5.5 block w-full cursor-pointer appearance-none rounded border border-dashed border-primary bg-gray px-4 py-4 dark:bg-meta-4 dark:border-gray-600 sm:py-7.5"
+                className="relative mb-5.5 block w-full cursor-pointer appearance-none rounded border border-dashed border-stroke bg-white px-4 py-4 dark:bg-dark-3 dark:border-dark-3 sm:py-7.5"
               >
                 <input
                   type="file"
                   accept="image/*"
-                  className="absolute inset-0 z-50 m-0 cursor-pointer p-0 opacity-0 outline-none"
+                  className="absolute inset-0 z-50 m-0 cursor-pointer p-0 opacity-0 outline-none bg-white dark:bg-dark-3 border-stroke dark:border-dark-3"
                 />
                 <div className="flex flex-col items-center justify-center space-y-2">
                   <span className="text-sm font-medium text-black dark:text-white">Sube tu foto</span>
@@ -254,7 +256,7 @@ const Settings = () => {
                   <span className="text-sm">Tamaño máximo 800x800px</span>
                 </div>
               </div>
-              <Button className="dark:bg-blue-600 dark:hover:bg-blue-700 w-full">Subir Imagen</Button>
+              <Button className="bg-primary w-full">Subir Imagen</Button>
             </div>
           </div>
         </div>

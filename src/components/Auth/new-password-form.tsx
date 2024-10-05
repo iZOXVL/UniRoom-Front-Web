@@ -76,7 +76,7 @@ export const NewPasswordForm = () => {
     <CardWrapper
       headerLabel="Ingresa tu nueva contraseña"
       backButtonLabel="Regresar"
-      backButtonHref="/auth/login"
+      backButtonHref="/"
     >
       <Form {...form}>
         <form 
@@ -113,7 +113,7 @@ export const NewPasswordForm = () => {
           <Button
             disabled={isPending}
             type="submit"
-            className="w-full"
+            className="w-full bg-primary"
           >
             Cambiar contraseña
           </Button>

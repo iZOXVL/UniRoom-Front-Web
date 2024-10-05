@@ -61,33 +61,41 @@ export const NewVerificationForm = () => {
     <CardWrapper
       headerLabel=""
       backButtonLabel="Regresar"
-      backButtonHref="/auth/login"
+      backButtonHref="/"
     >
       <div className="flex flex-col items-center justify-center w-full">
         {loading && (
           <motion.div variants={item}>
-            <BeatLoader />
+            <DotLottiePlayer
+              src="/lotties/load.lottie"
+              autoplay
+              loop
+              style={{ height: "120px", width: "120px" }}
+              className="flex justify-center items-center ml-5"
+            />
             <p className="mt-2">Confirmando cuenta...</p>
           </motion.div>
         )}
         {success && (
-          <motion.div variants={item} className="flex flex-col items-center">
+          <motion.div variants={item} className="flex flex-col items-center justify-center">
             <DotLottiePlayer
               src="/lotties/verify.lottie"
               autoplay
               loop
               style={{ height: "120px", width: "120px" }}
+              className="flex justify-center items-center"
             />
             <FormSuccess message={success} />
           </motion.div>
         )}
         {error && (
-          <motion.div variants={item} className="flex flex-col items-center">
+          <motion.div variants={item} className="flex flex-col items-center justify-center">
             <DotLottiePlayer
               src="/lotties/error.lottie"
               autoplay
               loop
               style={{ height: "120px", width: "120px" }}
+              className="flex justify-center items-center"
             />
             <FormError message={error} />
           </motion.div>

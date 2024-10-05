@@ -34,16 +34,16 @@ interface HeaderProps {
 };
 
 export const Header = ({
-    label,
+  label,
 }: HeaderProps) => {
-    return(
-        <div className="w-full flex flex-col gap-y-4 items-center justify-center">
-            <motion.h1 variants={item} className={cn("text-3xl font-semibold", font.className)}>
-              UniRoom 🎓🏠
-            </motion.h1>
-            <motion.p variants={item} className="text-muted-foreground text-sm">
-                {label}
-            </motion.p>
-        </div>
-    );
+  return(
+      <div className="w-full flex flex-col gap-y-4 items-center justify-center">
+          <motion.div variants={item}>
+          <img src="/logos/logo_negro.png" alt="UniRoom Logo" className="h-12" />
+          </motion.div>
+          <motion.p variants={item} className="text-muted-foreground text-sm">
+              {label}
+          </motion.p>
+      </div>
+  );
 };

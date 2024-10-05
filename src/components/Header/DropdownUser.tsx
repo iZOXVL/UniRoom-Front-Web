@@ -95,7 +95,7 @@ const DropdownUser = () => {
               alt="User"
               className="overflow-hidden rounded-full"
             />
-            <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green dark:border-gray-dark"></span>
+            
           </span>
           <span className="block">
             <span className="block font-medium text-dark dark:text-white">
