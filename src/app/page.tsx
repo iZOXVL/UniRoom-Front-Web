@@ -12,34 +12,44 @@ export default function Home() {
   const [formType, setFormType] = useState<'login' | 'register' | 'reset'>('login');
 
   return (
-    <main className="flex h-screen">
+    <main className="flex flex-col md:flex-row h-screen">
       {/* Columna izquierda */}
-      <div className="flex flex-col items-center justify-center w-1/2 p-6">
-        <img src="logos/logo_negro.png" width={600} height={300} alt="UniRoom Logo" />
+      <div className="flex flex-col items-center justify-center w-full md:w-1/2 p-6">
+      <img
+  src="logos/logo_negro.png"
+  alt="UniRoom Logo"
+  className="w-full max-w-[250px] h-auto md:max-w-[300px] lg:max-w-[400px] xl:max-w-[500px]"
+/>
+
         <div className="text-center">
-          <h1 className={cn("text-medium -mt-10 font-semibold text-black drop-shadow-md text-center")}>
+        <h1 className={cn("text-sm sm:text-base md:text-lg lg:text-small font-semibold text-black drop-shadow-md text-center mt-2 mb-4")}>
             Gestiona tus propiedades fácilmente y conecta con estudiantes en un solo lugar
           </h1>
-          <DotLottiePlayer
-            src="/lotties/login.lottie"
-            loop
-            autoplay
-            style={{ height: '520px', width: '520px' }}
-            className="mt-5"
-          />
+          <div className="flex justify-center items-center w-full">
+            <DotLottiePlayer
+              src="/lotties/login.lottie"
+              loop
+              autoplay
+              style={{ height: '100%', maxWidth: '400px' }}
+              className="hidden md:block mt-5 w-full h-auto max-w-xs md:max-w-md lg:max-w-lg"
+            />
+          </div>
         </div>
       </div>
 
-      <div className="w-0.5 bg-[#2b5973] my-30
-"></div> 
-
-      {/* Columna derecha*/}
-      <div className="w-1/2 flex flex-col items-center justify-center space-y-8 p-8">
-        <h1 className={cn("text-2xl font-semibold text-black drop-shadow-md text-center")}>
+      {/* Separador */}
+      <div className="flex justify-center items-center">
+        <div className="w-0.5 h-[60%] bg-[#2b5973] mx-5"></div>
+      </div>
+      
+      {/* Columna derecha */}
+      <div className="w-full md:w-1/2 flex flex-col items-center justify-center space-y-8 p-8">
+        {/* Encabezado oculto en pantallas pequeñas */}
+        <h1 className={cn("hidden md:block text-2xl font-semibold text-black drop-shadow-md text-center")}>
           {formType === 'login' ? "Accede a tu espacio en UniRoom 🚪✨" : formType === 'register' ? "Únete a la comunidad de UniRoom 🤝🌟" : "Recupera tu contraseña y vuelve a empezar 🔑🔄"}
         </h1>
         
-        {formType === 'login' && <LoginForm/>}
+        {formType === 'login' && <LoginForm />}
         {formType === 'register' && <RegisterForm />}
         {formType === 'reset' && <ResetForm />}
 
