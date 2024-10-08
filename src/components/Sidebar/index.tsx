@@ -29,7 +29,7 @@ const menuGroups = [
         route: "#",
         children: [
           { label: "Publicar habitación", route: "/rooms/add-room" },
-          { label: "Mis habitaciones", route: "/" },
+          { label: "Mis habitaciones", route: "#" },
         ],
       },
     ],
@@ -53,7 +53,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       >
         {/* <!-- SIDEBAR HEADER --> */}
         <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5 xl:py-10">
-          <Link href="#">
+          <Link href="/dashboard">
             <Image
               width={196}
               height={42}

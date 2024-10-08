@@ -78,7 +78,7 @@ const AddRoomForm = () => {
                 </label>
                 <input
                   type="text"
-                  placeholder="Ingrese el apellido del autor"
+                  placeholder="Ingrese la descripción de la publicación"
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white"
