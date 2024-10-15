@@ -22,7 +22,7 @@ export const NewVerificationForm = () => {
     if (success || error) return;
 
     if (!token) {
-      setError("Token no reconocido!");
+      setError("Token no reconocido");
       setLoading(false); // Deja de cargar
       return;
     }
@@ -39,7 +39,7 @@ export const NewVerificationForm = () => {
         }
       })
       .catch(() => {
-        setError("Ha ocurrido un error!");
+        setError("Ha ocurrido un error");
         setSuccess(undefined); // Limpia el éxito
         setLoading(false); // Deja de cargar
       });
@@ -81,7 +81,6 @@ export const NewVerificationForm = () => {
             <DotLottiePlayer
               src="/lotties/verify.lottie"
               autoplay
-              loop
               style={{ height: "120px", width: "120px" }}
               className="flex justify-center items-center"
             />
@@ -93,7 +92,6 @@ export const NewVerificationForm = () => {
             <DotLottiePlayer
               src="/lotties/error.lottie"
               autoplay
-              loop
               style={{ height: "120px", width: "120px" }}
               className="flex justify-center items-center"
             />

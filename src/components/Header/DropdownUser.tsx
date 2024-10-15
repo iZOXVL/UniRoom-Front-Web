@@ -11,8 +11,9 @@ import { logout } from "@/actions/logout";
 
 const DropdownUser = () => {
   const user = useCurrentUser();
+  const userId = user?.id; // Obtén el ID del usuario actual de la sesión
   const onClick = () => {
-    logout();
+    logout(userId as string);
   };
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -80,7 +81,7 @@ const DropdownUser = () => {
         variants={dropdownVariants}
         initial="closed"
         animate={dropdownOpen ? "open" : "closed"}
-        className="absolute right-0 mt-7.5 flex w-[280px] flex-col rounded-lg border-[0.5px] border-stroke bg-white shadow-default dark:border-dark-3 dark:bg-gray-dark"
+        className="absolute right-0 mt-10 flex w-[280px] flex-col rounded-lg border-[0.5px] border-stroke bg-white shadow-default dark:border-dark-3 dark:bg-gray-dark"
       >
         <div className="flex items-center gap-2.5 px-5 pb-5.5 pt-3.5">
           <span className="relative block h-12 w-12 rounded-full">
