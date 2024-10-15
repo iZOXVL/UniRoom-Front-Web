@@ -8,6 +8,7 @@ datasource db {
 generator client {
     provider = "prisma-client-js"
 }
+
 enum UserRole {
   ARRENDADOR
   ESTUDIANTE
@@ -21,12 +22,21 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
-  role         UserRole @default(ARRENDADOR)  
+  role          UserRole  @default(ARRENDADOR)  
   accounts      Account[]
   isTwoFactorEnabled Boolean @default(false)
   twoFactorConfirmation TwoFactorConfirmation?
+  jwtTokens     JwtToken[]   // Relación con JWT Tokens
 }
 
+model JwtToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, token])
+}
 
 model Account {
   id                 String  @id @default(cuid())
@@ -47,40 +57,37 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-model VerificationToken{
+model VerificationToken {
   id        String   @id @default(cuid())
-  email    String
+  email     String
   token     String   @unique
-  expires DateTime
+  expires   DateTime
 
   @@unique([email, token])
 }
 
-
-model PasswordResetToken{
+model PasswordResetToken {
   id        String   @id @default(cuid())
-  email    String
+  email     String
   token     String   @unique
-  expires DateTime
+  expires   DateTime
 
   @@unique([email, token])
 }
 
-model TwoFactorToken{
+model TwoFactorToken {
   id        String   @id @default(cuid())
-  email    String
+  email     String
   token     String   @unique
-  expires DateTime
+  expires   DateTime
 
   @@unique([email, token])
 }
 
-model TwoFactorConfirmation{
+model TwoFactorConfirmation {
   id        String   @id @default(cuid())
-  userId String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId])
 }
-
-
