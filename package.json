@@ -37,6 +37,7 @@
     "embla-carousel-react": "^8.0.0-rc19",
     "flatpickr": "^4.6.13",
     "framer-motion": "^11.3.8",
+    "jsonwebtoken": "^9.0.2",
     "jsvectormap": "^1.5.3",
     "ldrs": "^1.0.2",
     "lottie-web": "^5.12.2",
@@ -66,6 +67,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
