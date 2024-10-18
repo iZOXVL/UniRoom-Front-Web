@@ -11,7 +11,7 @@ import { logout } from "@/actions/logout";
 
 const DropdownUser = () => {
   const user = useCurrentUser();
-  const userId = user?.id; // Obtén el ID del usuario actual de la sesión
+  const userId = user?.id; 
   const onClick = () => {
     logout(userId as string);
   };
