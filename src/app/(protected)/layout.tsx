@@ -31,9 +31,10 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+       <ConfettiProvider />
       <body suppressHydrationWarning={true} className="bg-[#D4D4D4]">
         <ChakraProviderWrapper>
-        <ConfettiProvider />
+       
           <DefaultLayout>
             {loading ? (
               <Loader />
