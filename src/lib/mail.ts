@@ -23,7 +23,7 @@ export const sendTwoFactorTokenEmail = async (
             <tbody>
               <tr>
                 <td>
-                  <img src="https://imgur.com/a/Cc5gmv0.png" alt="Logo" height="130" style="display:block;margin:0 auto;">
+                  <img src="https://i.imgur.com/uKIVq1K.png" alt="Logo" height="130" style="display:block;margin:0 auto;">
                   <h1 style="text-align:center; font-size:24px;">Autenticación de 2 factores</h1>
                   <p style="font-size:14px;">Hola, ¡Tus llaves virtuales están aquí!</p>
                   <p style="font-size:14px;">Tu código de acceso es:</p>
@@ -69,7 +69,7 @@ export const sendVerificationEmail = async (
             <tbody>
               <tr>
                 <td>
-                  <img src="https://imgur.com/a/Cc5gmv0.png" alt="Logo" height="130" style="display:block;margin:0 auto;">
+                  <img src="https://i.imgur.com/uKIVq1K.png" alt="Logo" height="130" style="display:block;margin:0 auto;">
                   <h1 style="text-align:center; font-size:24px;">¡Bienvenido a UniRoom! 🤗</h1>
                   <p style="font-size:14px;">Para asegurarnos de que esta cuenta es realmente tuya y no de algún vecino curioso, haz clic en el siguiente botón para confirmar tu dirección de correo electrónico. 🏠🔑</p>
                     <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation" style="text-align:center;margin-top:32px;margin-bottom:32px">
@@ -110,7 +110,7 @@ export const sendPasswordResetEmail = async (
             <tbody>
               <tr>
                 <td>
-                  <img src="https://imgur.com/a/Cc5gmv0.png" alt="Logo" height="130" style="display:block;margin:0 auto;">
+                  <img src="https://i.imgur.com/uKIVq1K.png" alt="Logo" height="130" style="display:block;margin:0 auto;">
                   <h1 style="text-align:center; font-size:24px;">¡Perdiste tu contraseña!<br></br> ¿Te mudaste a otro planeta? 🛸</h1>
                   <p style="font-size:14px;">Parece que olvidaste tu contraseña. 😅 Haz clic en el siguiente botón para recuperarla.</p>
                     <table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation" style="text-align:center;margin-top:32px;margin-bottom:32px">

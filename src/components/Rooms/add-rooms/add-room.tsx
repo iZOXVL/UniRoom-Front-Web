@@ -4,17 +4,17 @@ import React from "react";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { useState } from "react";
 import useAddRoom from "@/components/Rooms/hooks/useAddRoom";
-import uploadImages from "@/components/Rooms/hooks/useAddRoom"
 import { useToast } from "@chakra-ui/react";
-import { Spinner } from "@nextui-org/spinner";
 import Map from '@/components/Rooms/add-rooms/map';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import { FaDollarSign, FaUserGroup, FaCheck } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
 import { MdOutlineSubtitles, MdGroupAdd, MdTitle, MdOutlinePets } from "react-icons/md";
 import { IoLocationSharp } from "react-icons/io5";
-import ImageUploader from "./image-uploader";
 import { reglas, servicios } from "@/components/Rooms/types/rules-services";
+import useUploadMedia from "@/components/Rooms/hooks/useUploadImages";
+import MediaUploader from "./image-uploader";
+import { useConfettiStore } from "@/hooks/use-confetti-store";
 
 const AddRoomForm = () => {
   const [titulo, setTitulo] = useState("");
@@ -25,7 +25,6 @@ const AddRoomForm = () => {
   const [maxTime, setMaxTime] = useState("");
   const [allowPets, setAllowPets] = useState(false);
   const [sharedStatus, setSharedStatus] = useState(false);
-  const [imagen, setImagen] = useState<File | null>(null);
   const [location, setLocation] = useState<{ lat: number | undefined, lng: number | undefined, address: string | undefined }>({
     lat: undefined,
     lng: undefined,
@@ -33,19 +32,25 @@ const AddRoomForm = () => {
   });
   const [selectedServices, setSelectedServices] = useState<number[]>([]); 
   const [selectedRules, setSelectedRules] = useState<number[]>([]); 
-  const { addRoom, isLoading } = useAddRoom();
-  const toast = useToast();
-
+  const { addRoom, isLoading: isAddingRoom } = useAddRoom();
   const [images, setImages] = useState<File[]>([]);
+  const [videos, setVideos] = useState<File[]>([]);
+  const { uploadMedia, isLoading: isUploadingMedia } = useUploadMedia();
+  const toast = useToast();
+  const confetti = useConfettiStore();
 
   const handleImagesChange = (newImages: File[]) => {
     setImages(newImages);
   };
 
+  const handleVideosChange = (newVideos: File[]) => {
+    setVideos(newVideos);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); 
   
-    if (images.length === 0) {
+    if (images.length === 0 && videos.length === 0) {
       toast({
         title: "Error",
         description: "Por favor, sube al menos una imagen.",
@@ -82,16 +87,39 @@ const AddRoomForm = () => {
       sharedStatus,
       allowPets,
     };
-
-    console.log(roomData);  
-    console.log(images);  
   
-    const roomId = await addRoom(roomData); 
+    const roomPromise = new Promise(async (resolve, reject) => {
+      try {
+        const roomId = await addRoom(roomData);
+        if (roomId) {
+          await uploadMedia(roomId, images, videos);
+          confetti.onOpen();
+          resolve(roomId);
+        } else {
+          reject(new Error("Error al crear la habitación."));
+        }
+      } catch (error) {
+        reject(error);
+      }
+    });
   
-    if (roomId) {
-      await uploadImages(roomId, images);
-    }
+    toast.promise(roomPromise, {
+      loading: {
+        title: "Publicando habitación...",
+        description: "Por favor espera mientras se publica la habitación.",
+      },
+      success: {
+        title: "Habitación publicada",
+        description: "La habitación se ha publicado exitosamente.",
+      },
+      error: {
+        title: "Error",
+        description: "Hubo un problema al publicar la habitación.",
+      },
+    });
   };
+  
+  
 
   const handleServiceClick = (id: number) => {
     setSelectedServices((prev) =>
@@ -334,21 +362,12 @@ ${allowPets ? 'bg-gray-300 border-primary' : 'bg-white border-stroke hover:bg-gr
                 </div>
               </div>
             </div>
-            <ImageUploader onImagesChange={handleImagesChange} />
+            <MediaUploader onImagesChange={handleImagesChange} onVideosChange={handleVideosChange} />
 
-            <button
-              type="submit"
-              className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Spinner color="success" />
-                </>
-              ) : (
-                "Publicar habitación"
-              )}
+            <button type="submit" disabled={isUploadingMedia}>
+        {isUploadingMedia ? "Subiendo..." : "Publicar habitación"}
             </button>
+
           </form>
         </div>
       </div>

@@ -18,15 +18,15 @@ interface RoomData {
   address: string;
 }
 
-const useAddRoom = (roomId?: any, images?: File[]) => {
+const useAddRoom = () => {
   const user = useCurrentUser();
   const userToken = user?.JwtToken; 
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
-  const addRoom = async (data: RoomData) => {
+  const addRoom = async (data: RoomData): Promise<number | null> => {
     setIsLoading(true);
-
+  
     try {
       const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/AddRoom", {
         method: "POST",
@@ -58,20 +58,19 @@ const useAddRoom = (roomId?: any, images?: File[]) => {
           },
         }),
       });
-
+  
       if (!response.ok) throw new Error("Error al crear la habitación.");
-
+  
       const room = await response.json();
-      toast({
-        title: "Guardado!",
-        description: "La habitación se publicó correctamente.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-
-      return room.id; 
+      
+      if (room && room.roomId) {
+        return room.roomId; 
+      } else {
+        throw new Error("No se recibió roomId de la API.");
+      }
+      
     } catch (error) {
+      console.error(error);
       toast({
         title: "Error",
         description: "Hubo un problema al publicar la habitación.",
@@ -84,43 +83,10 @@ const useAddRoom = (roomId?: any, images?: File[]) => {
       setIsLoading(false);
     }
   };
-
-  const uploadImages = async (roomId: number, images: File[]) => {
-    const formData = new FormData();
-    
-    
-    formData.append("roomId", roomId.toString());
-
-    images.forEach((image) => formData.append("images", image));
   
-    try {
-      const response = await fetch(`https://uruniroom.azurewebsites.net/api/Multimedia/AddMultimedia`, {
-        method: "POST",
-        body: formData,
-      });
-  
-      if (!response.ok) throw new Error("Error al subir imágenes.");
-  
-      toast({
-        title: "Éxito!",
-        description: "Las imágenes se subieron correctamente.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Hubo un problema al subir las imágenes.",
-        status: "error",
-        duration: 9000,
-        isClosable: true,
-      });
-    }
-  };
   
 
-  return { addRoom, uploadImages, isLoading };
+  return { addRoom, isLoading };
 };
 
 export default useAddRoom;
