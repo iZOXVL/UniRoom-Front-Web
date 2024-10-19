@@ -9,6 +9,7 @@ import Loader from "@/components/common/Loader";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import { motion } from "framer-motion";
 import ChakraProviderWrapper from "@/ChakraProvider";
+import { ConfettiProvider } from "@/components/providers/confetti-provider";
 
 export default function RootLayout({
   children,
@@ -32,6 +33,7 @@ export default function RootLayout({
     <html lang="en">
       <body suppressHydrationWarning={true} className="bg-[#D4D4D4]">
         <ChakraProviderWrapper>
+        <ConfettiProvider />
           <DefaultLayout>
             {loading ? (
               <Loader />
@@ -42,6 +44,7 @@ export default function RootLayout({
                 exit="exit"
                 variants={variants}
               >
+                
                 {children}
               </motion.div>
             )}

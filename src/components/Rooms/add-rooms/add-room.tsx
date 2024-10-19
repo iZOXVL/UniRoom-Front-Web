@@ -4,9 +4,7 @@ import React from "react";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { useState } from "react";
 import useAddRoom from "@/components/Rooms/hooks/useAddRoom";
-import uploadImages from "@/components/Rooms/hooks/useUploadImages";
 import { useToast } from "@chakra-ui/react";
-import { Spinner } from "@nextui-org/spinner";
 import Map from '@/components/Rooms/add-rooms/map';
 import { DotLottiePlayer } from '@dotlottie/react-player';
 import { FaDollarSign, FaUserGroup, FaCheck } from "react-icons/fa6";
@@ -16,6 +14,7 @@ import { IoLocationSharp } from "react-icons/io5";
 import { reglas, servicios } from "@/components/Rooms/types/rules-services";
 import useUploadMedia from "@/components/Rooms/hooks/useUploadImages";
 import MediaUploader from "./image-uploader";
+import { useConfettiStore } from "@/hooks/use-confetti-store";
 
 const AddRoomForm = () => {
   const [titulo, setTitulo] = useState("");
@@ -38,6 +37,7 @@ const AddRoomForm = () => {
   const [videos, setVideos] = useState<File[]>([]);
   const { uploadMedia, isLoading: isUploadingMedia } = useUploadMedia();
   const toast = useToast();
+  const confetti = useConfettiStore();
 
   const handleImagesChange = (newImages: File[]) => {
     setImages(newImages);
@@ -48,7 +48,7 @@ const AddRoomForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); 
   
     if (images.length === 0 && videos.length === 0) {
       toast({
@@ -93,6 +93,7 @@ const AddRoomForm = () => {
         const roomId = await addRoom(roomData);
         if (roomId) {
           await uploadMedia(roomId, images, videos);
+          confetti.onOpen();
           resolve(roomId);
         } else {
           reject(new Error("Error al crear la habitación."));
