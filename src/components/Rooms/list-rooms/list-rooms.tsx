@@ -27,16 +27,13 @@ const TableRooms = () => {
             <h5 className="text-sm font-medium xsm:text-base">Id</h5>
           </div>
           <div className="p-2.5 xl:p-5">
-            <h5 className="text-sm font-medium xsm:text-base">Imagen</h5>
+            <h5 className="text-sm font-medium xsm:text-base">Multimedia</h5>
           </div>
           <div className="p-2.5 xl:p-5">
-            <h5 className="text-sm font-medium xsm:text-base">Nombre</h5>
+            <h5 className="text-sm font-medium xsm:text-base">Titulo</h5>
           </div>
           <div className="p-2.5 xl:p-5">
-            <h5 className="text-sm font-medium xsm:text-base">Apellido</h5>
-          </div>
-          <div className="p-2.5 xl:p-5">
-            <h5 className="text-sm font-medium xsm:text-base">Fecha de nacimiento</h5>
+            <h5 className="text-sm font-medium xsm:text-base">Descripción</h5>
           </div>
         </div>
 
