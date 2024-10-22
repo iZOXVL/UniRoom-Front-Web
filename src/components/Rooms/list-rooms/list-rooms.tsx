@@ -2,11 +2,9 @@
 
 import { motion } from "framer-motion";
 import Loader from "@/components/common/Loader";
-import { useGetRooms } from "@/components/Rooms/hooks/useGetRoom";
+import useGetRooms from "@/components/Rooms/hooks/useGetRoom";
 import Image from "next/image";
 import { FaRegCopy } from "react-icons/fa";
-import { Chip } from "@nextui-org/react";
-import { useState } from "react";
 
 const TableRooms = () => {
   const { habitaciones, loading, error } = useGetRooms();
@@ -37,26 +35,20 @@ const TableRooms = () => {
           </div>
         </div>
 
-        {habitaciones.map((room, roomId) => (
+        {habitaciones.map((room) => (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className={`grid grid-cols-3 sm:grid-cols-5 ${
-              roomId === habitaciones.length - 1 ? "" : "border-b border-stroke dark:border-dark-3"
-            }`}
+            className={`grid grid-cols-3 sm:grid-cols-5 border-b border-stroke dark:border-dark-3`}
             key={room.roomId}
           >
             <div className="flex items-center justify-center p-2.5 xl:p-5">
-                <p className="text-black dark:text-white text-custom-size">{room.roomId}</p>
+              <p className="text-black dark:text-white text-custom-size">{room.roomId}</p>
             </div>
             <div className="flex items-center justify-center p-2.5 xl:p-5">
               <Image
-                src={
-                  room.roomId
-                    ? `data:image/jpeg;base64,${room.multimedia}`
-                    : "/images/notImage.png"
-                }
+                src={room.multimedia || "/images/notImage.png"} // Ahora usas la URL que viene de la API.
                 alt={room.title}
                 width={88}
                 height={88}
