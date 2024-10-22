@@ -173,7 +173,7 @@ const AddRoomForm = () => {
               <div className="w-full xl:w-1/2 mx-auto">
                 <label
                   className={`rounded-[10px] border-2 relative flex items-center justify-between cursor-pointer p-4 transition-all duration-200
-${allowPets ? 'bg-gray-300 border-primary' : 'bg-white border-stroke hover:bg-gray-300 hover:border-primary'}
+${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-gray-300 hover:border-primary'}
       dark:bg-dark-2 dark:${allowPets ? 'bg-dark-3 border-primary' : 'hover:bg-dark-3'}
     `}
                 >
@@ -300,7 +300,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : 'bg-white border-stroke hover:bg-gr
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   rows={8}
-                  className="w-full h-[295px] rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white resize-none dark:active:border-primary"
+                  className="w-full h-[288px] rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white resize-none dark:active:border-primary"
                 />
               </div>
               <div className="w-full xl:w-1/2">
@@ -362,10 +362,18 @@ ${allowPets ? 'bg-gray-300 border-primary' : 'bg-white border-stroke hover:bg-gr
                 </div>
               </div>
             </div>
-            <MediaUploader onImagesChange={handleImagesChange} onVideosChange={handleVideosChange} />
 
-            <button type="submit" disabled={isUploadingMedia}>
-        {isUploadingMedia ? "Subiendo..." : "Publicar habitación"}
+            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+            <div className="w-full xl:w-full">
+                <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
+                  Multimedia
+                </label>
+                <MediaUploader onImagesChange={handleImagesChange} onVideosChange={handleVideosChange} />
+              </div>
+            </div>
+            
+            <button type="submit" disabled={isUploadingMedia} className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90">
+        {isAddingRoom || isUploadingMedia ? "Subiendo..." : "Publicar habitación"}
             </button>
 
           </form>
