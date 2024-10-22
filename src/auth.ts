@@ -136,7 +136,6 @@ export const {
       token.email = existingUser.email;
       token.role = existingUser.role;
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
-      console.log(token);
       return token; // Devuelve el token actualizado
     }
   },
