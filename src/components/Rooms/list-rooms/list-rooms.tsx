@@ -9,6 +9,8 @@ import { FaRegCopy } from "react-icons/fa";
 const TableRooms = () => {
   const { habitaciones, loading, error } = useGetRooms();
 
+  console.log(habitaciones);
+
   if (loading) {
     return <Loader />;
   }
@@ -36,6 +38,7 @@ const TableRooms = () => {
         </div>
 
         {habitaciones.map((room) => (
+          console.log(room),
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -47,14 +50,14 @@ const TableRooms = () => {
               <p className="text-black dark:text-white text-custom-size">{room.roomId}</p>
             </div>
             <div className="flex items-center justify-center p-2.5 xl:p-5">
-              <Image
-                src={room.multimedia || "/images/notImage.png"} // Ahora usas la URL que viene de la API.
-                alt={room.title}
-                width={88}
-                height={88}
-                className="rounded-md"
-                objectFit="contain"
-              />
+            <Image
+              src={room.multimedia || "/images/notImage.png"} 
+              alt={room.title}
+              width={88}
+              height={88}
+              className="rounded-md"
+              objectFit="contain"
+            />            
             </div>
             <div className="flex items-center justify-center p-2.5 xl:p-5">
               <p className="text-black dark:text-white">{room.title}</p>

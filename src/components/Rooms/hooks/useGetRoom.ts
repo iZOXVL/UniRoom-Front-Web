@@ -3,20 +3,17 @@ import { useToast } from "@chakra-ui/react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface Room {
-  roomId: number;
+  roomId: string;
+  multimedia: string;
   title: string;
   description: string;
-  price: number;
-  multimedia: string;
-  requestCount: number;
-  receiptCount: number;
 }
 
 const useGetRooms = () => {
   const user = useCurrentUser();
   const userToken = user?.JwtToken;
   const [habitaciones, setHabitaciones] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const toast = useToast();
 
@@ -33,19 +30,25 @@ const useGetRooms = () => {
           body: JSON.stringify({
             token: userToken,
             pageNumber: 1,
-            pageSize: 10, // Puedes ajustar el número de habitaciones por página
+            pageSize: 10,
           }),
         });
 
         if (!response.ok) throw new Error("Error al obtener las habitaciones.");
 
         const data = await response.json();
-        setHabitaciones(data.rooms || []); // Asegúrate de que la estructura del JSON sea correcta.
-      } catch (error) {
-        setError(error as Error);
+
+        console.log("Data recibida:", data);
+
+       
+        setHabitaciones(data);
+
+      } catch (error: any) {
+        console.error(error);
+        setError(error);
         toast({
           title: "Error",
-          description: "Hubo un problema al cargar las habitaciones.",
+          description: "Hubo un problema al obtener las habitaciones.",
           status: "error",
           duration: 9000,
           isClosable: true,
@@ -55,10 +58,8 @@ const useGetRooms = () => {
       }
     };
 
-    if (userToken) {
-      fetchRooms();
-    }
-  }, [userToken]);
+    fetchRooms();
+  }, [userToken, toast]);
 
   return { habitaciones, loading, error };
 };
