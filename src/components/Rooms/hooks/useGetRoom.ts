@@ -9,12 +9,13 @@ interface Room {
   description: string;
 }
 
-const useGetRooms = () => {
+const useGetRooms = (pageNumber: number, pageSize: number) => {
   const user = useCurrentUser();
   const userToken = user?.JwtToken;
   const [habitaciones, setHabitaciones] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [totalRooms, setTotalRooms] = useState(0); // Nuevo estado para el total de habitaciones
   const toast = useToast();
 
   useEffect(() => {
@@ -29,20 +30,16 @@ const useGetRooms = () => {
           },
           body: JSON.stringify({
             token: userToken,
-            pageNumber: 1,
-            pageSize: 10,
+            pageNumber,
+            pageSize,
           }),
         });
 
         if (!response.ok) throw new Error("Error al obtener las habitaciones.");
 
         const data = await response.json();
-
-        console.log("Data recibida:", data);
-
-       
-        setHabitaciones(data);
-
+        setHabitaciones(data.rooms);
+        setTotalRooms(data.totalRooms); // Guarda el total de habitaciones
       } catch (error: any) {
         console.error(error);
         setError(error);
@@ -59,9 +56,10 @@ const useGetRooms = () => {
     };
 
     fetchRooms();
-  }, [userToken, toast]);
+  }, [userToken, toast, pageNumber, pageSize]);
 
-  return { habitaciones, loading, error };
+  return { habitaciones, loading, error, totalRooms }; // Devolvemos el total de habitaciones
 };
+
 
 export default useGetRooms;
