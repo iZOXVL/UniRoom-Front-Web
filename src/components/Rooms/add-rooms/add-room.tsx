@@ -30,8 +30,8 @@ const AddRoomForm = () => {
     lng: undefined,
     address: undefined
   });
-  const [selectedServices, setSelectedServices] = useState<number[]>([]); 
-  const [selectedRules, setSelectedRules] = useState<number[]>([]); 
+  const [selectedServices, setSelectedServices] = useState<number[]>([]);
+  const [selectedRules, setSelectedRules] = useState<number[]>([]);
   const { addRoom, isLoading: isAddingRoom } = useAddRoom();
   const [images, setImages] = useState<File[]>([]);
   const [videos, setVideos] = useState<File[]>([]);
@@ -48,8 +48,8 @@ const AddRoomForm = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); 
-  
+    e.preventDefault();
+
     if (images.length === 0 && videos.length === 0) {
       toast({
         title: "Error",
@@ -60,7 +60,84 @@ const AddRoomForm = () => {
       });
       return;
     }
-  
+
+    if (!titulo) {
+      toast({
+        title: "Error",
+        description: "El título es obligatorio.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    }   
+
+    if (price == "0") {
+      toast({
+        title: "Error",
+        description: "El precio debe ser mayor a cero.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    }   
+
+    if (maxPeople == "0") {
+      toast({
+        title: "Error",
+        description: "El número de habitantes debe ser mayor a cero.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    }  
+
+    if (maxPeople == "0") {
+      toast({
+        title: "Error",
+        description: "El número de habitantes debe ser mayor a cero.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    }  
+
+    if (minTime == "0") {
+      toast({
+        title: "Error",
+        description: "Los tiempos de renta deben ser mayor a cero.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    } 
+
+    if (maxTime == "0") {
+      toast({
+        title: "Error",
+        description: "Los tiempos de renta deben ser mayor a cero.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    } 
+
+    if (!descripcion) {
+      toast({
+        title: "Error",
+        description: "La descripción es obligatoria.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    } 
+
     if (!location.lat || !location.lng || !location.address) {
       toast({
         title: "Error",
@@ -71,7 +148,7 @@ const AddRoomForm = () => {
       });
       return;
     }
-  
+
     const roomData = {
       titulo,
       descripcion,
@@ -87,7 +164,7 @@ const AddRoomForm = () => {
       sharedStatus,
       allowPets,
     };
-  
+
     const roomPromise = new Promise(async (resolve, reject) => {
       try {
         const roomId = await addRoom(roomData);
@@ -102,7 +179,7 @@ const AddRoomForm = () => {
         reject(error);
       }
     });
-  
+
     toast.promise(roomPromise, {
       loading: {
         title: "Publicando habitación...",
@@ -118,8 +195,8 @@ const AddRoomForm = () => {
       },
     });
   };
-  
-  
+
+
 
   const handleServiceClick = (id: number) => {
     setSelectedServices((prev) =>
@@ -135,7 +212,7 @@ const AddRoomForm = () => {
 
   return (
     <>
-      <Breadcrumb pageName="Publicar habitación"/>
+      <Breadcrumb pageName="Publicar habitación" />
       <div className="flex flex-col gap-9">
         <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
           <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
@@ -192,12 +269,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   )}
                 </label>
               </div>
-
-
-
-            </div>
-
-
+        </div>
 
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div className="w-full xl:w-4/6">
@@ -211,7 +283,6 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                   className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
-                  required
                 />
               </div>
 
@@ -221,16 +292,14 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   Precio
                 </label>
                 <div className="relative">
-                    <input
-                      type="number"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
-                      required
-                      min="0"
-                    />
-                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">MXN</span>
-                  </div>
+                  <input
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  />
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">MXN</span>
+                </div>
               </div>
 
               <div className="w-full xl:w-1/6">
@@ -243,7 +312,6 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   value={maxPeople}
                   onChange={(e) => setMaxPeople(e.target.value)}
                   className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
-                  required
                 />
               </div>
             </div>
@@ -252,20 +320,18 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div className="w-full xl:w-1/2">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
-                  <FaCheck   className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
+                  <FaCheck className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
                   Tiempo de renta mínimo requerido
                 </label>
                 <div className="relative">
-                    <input
-                      type="number"
-                      value={minTime}
-                      onChange={(e) => setMinTime(e.target.value)}
-                      className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
-                      required
-                      min="0"
-                    />
-                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">meses</span>
-                  </div>
+                  <input
+                    type="number"
+                    value={minTime}
+                    onChange={(e) => setMinTime(e.target.value)}
+                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  />
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">meses</span>
+                </div>
               </div>
 
               <div className="w-full xl:w-1/2">
@@ -274,18 +340,16 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   Tiempo de renta máximo requerido
                 </label>
                 <div className="relative">
-                    <input
-                      type="number"
-                      value={maxTime}
-                      onChange={(e) => setMaxTime(e.target.value)}
-                      className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
-                      required
-                      min="0"
-                    />
-                    <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">meses</span>
-                  </div>
+                  <input
+                    type="number"
+                    value={maxTime}
+                    onChange={(e) => setMaxTime(e.target.value)}
+                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  />
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">meses</span>
+                </div>
               </div>
-            
+
             </div>
 
 
@@ -328,6 +392,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                         type="button"
                         onClick={() => handleServiceClick(servicio.id)}
                         className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${isSelected ? 'border-primary bg-gray-200 dark:border-primary dark:bg-dark' : 'border-gray-300 dark:bg-dark-2 dark:border-dark-3'}`}
+                      
                       >
                         <DotLottiePlayer src={servicio.animation} autoplay hover style={{ width: '40px', height: '40px' }} />
                         <span className="text-sm font-medium">{servicio.label}</span>
@@ -336,10 +401,10 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   })}
                 </div>
               </div>
- 
+
             </div>
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-            <div className="w-full xl:w-full">
+              <div className="w-full xl:w-full">
                 {/* Reglas */}
                 <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
                   Reglas
@@ -364,16 +429,16 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
             </div>
 
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-            <div className="w-full xl:w-full">
+              <div className="w-full xl:w-full">
                 <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
                   Multimedia
                 </label>
                 <MediaUploader onImagesChange={handleImagesChange} onVideosChange={handleVideosChange} />
               </div>
             </div>
-            
+
             <button type="submit" disabled={isUploadingMedia} className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90">
-        {isAddingRoom || isUploadingMedia ? "Subiendo..." : "Publicar habitación"}
+              {isAddingRoom || isUploadingMedia ? "Subiendo..." : "Publicar habitación"}
             </button>
 
           </form>
