@@ -168,6 +168,7 @@ const AddRoomForm = () => {
     const roomPromise = new Promise(async (resolve, reject) => {
       try {
         const roomId = await addRoom(roomData);
+        console.log("Esta es la room:",roomId);
         if (roomId) {
           await uploadMedia(roomId, images, videos);
           confetti.onOpen();
@@ -212,7 +213,7 @@ const AddRoomForm = () => {
 
   return (
     <>
-      <Breadcrumb pageName="Publicar habitación" />
+      <Breadcrumb pageName="Publicar habitación"/>
       <div className="flex flex-col gap-9">
         <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
           <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
