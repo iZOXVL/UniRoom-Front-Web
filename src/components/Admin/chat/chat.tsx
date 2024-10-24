@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { io } from "socket.io-client"; // Asegúrate de tener socket.io-client instalado
 
 const Chat: React.FC = () => {
-  const { chats, loading, error } = useGetApprovedChats(); // Obtener chats aprobados
+  const { chats, loading, error, userToken, userName } = useGetApprovedChats(); // Obtener chats aprobados
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null); // Estado para el chat seleccionado
   const [messages, setMessages] = useState<any[]>([]); // Estado para los mensajes
   const [loadingMessages, setLoadingMessages] = useState(false); // Estado de carga de mensajes
@@ -66,8 +66,8 @@ const Chat: React.FC = () => {
     const messageData = {
       chatId: selectedChatId,
       content: newMessage,
-      nickname: "Gigdem", // Cambia esto según la lógica de tu aplicación
-      token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbTJhbGd3aTAwMDAwYmZyaHo0OWl1dm50IiwiaWF0IjoxNzI5NzU5NzQxfQ.-8jBfW6mPnZ9nruFCuWqfW7Pw7RNoPYUceFtWUMqtnc", // Cambia esto para obtener el token real
+      nickname: userName, // Cambia esto según la lógica de tu aplicación
+      token: userToken
     };
 
     try {
