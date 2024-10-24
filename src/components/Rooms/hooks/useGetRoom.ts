@@ -7,6 +7,9 @@ interface Room {
   multimedia: string;
   title: string;
   description: string;
+  address: string;
+  status: string;
+  price: string;
 }
 
 const useGetRooms = (pageNumber: number, pageSize: number) => {
