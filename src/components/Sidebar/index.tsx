@@ -29,7 +29,7 @@ const menuGroups = [
         route: "#",
         children: [
           { label: "Publicar habitación", route: "/rooms/add-room" },
-          { label: "Mis habitaciones", route: "#" },
+          { label: "Mis habitaciones", route: "/rooms/list-room" },
         ],
       },
     ],
