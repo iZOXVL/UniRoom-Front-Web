@@ -62,6 +62,8 @@ const useAddRoom = () => {
       if (!response.ok) throw new Error("Error al crear la habitación.");
   
       const room = await response.json();
+
+      console.log("respuesta de la appi:",room);
       
       if (room && room.roomId) {
         return room.roomId; 
