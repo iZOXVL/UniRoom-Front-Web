@@ -13,6 +13,7 @@ interface Chat {
 const useGetChats = () => {
   const user = useCurrentUser();
   const userToken = user?.JwtToken;
+  const userName = user?.name;  
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -49,7 +50,7 @@ const useGetChats = () => {
     fetchChats();
   }, [userToken, toast]);
 
-  return { chats, loading, error };
+  return { chats, loading, error, userToken, userName };
 };
 
 export default useGetChats;
