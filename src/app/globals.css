@@ -72,5 +72,38 @@ body,
     --input: 215 27.9% 16.9%;
     --ring: 216 12.2% 83.9%;
   }
+
+  /* Aplica el estilo de barra de desplazamiento para navegadores como Chrome, Edge y Safari */
+::-webkit-scrollbar {
+  width: 10px; /* Ancho de la barra de desplazamiento */
+}
+
+::-webkit-scrollbar-track {
+  background: #2b5973; /* Color del fondo de la barra */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888; /* Color de la barra */
+  border-radius: 10px; /* Redondeo de bordes */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Color al pasar el mouse por encima */
+}
+
+/* Firefox */
+* {
+  scrollbar-width: auto; /* Ancho de la barra en Firefox */
+  scrollbar-color: #2b5973 #f1f1f10a; /* Color de la barra y su fondo en Firefox */
+}
+
+/* Cambia el color de fondo y el color del texto cuando se selecciona */
+::selection {
+  background-color: #2b5973; /* Color de fondo de la selección */
+  color: #ffffff; /* Color del texto seleccionado */
+}
+
+
+
 }
  
