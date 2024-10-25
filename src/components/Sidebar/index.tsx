@@ -40,7 +40,7 @@ const menuGroups = [
         children: [
           { label: "Solicitudes", route: "/admin/requests" },
           { label: "Chats", route: "/admin/chats" },
-          { label: "Recibos", route: "/" },
+          { label: "Recibos", route: "#" },
         ],
       },
       {
@@ -50,8 +50,8 @@ const menuGroups = [
         label: "Estadísticas",
         route: "#",
         children: [
-          { label: "Reportes", route: "/"},
-          { label: "Graficas", route: "/" },
+          { label: "Reportes", route: "#"},
+          { label: "Graficas", route: "#" },
         ],
       },
     ],
