@@ -14,6 +14,7 @@ const useGetChats = () => {
   const user = useCurrentUser();
   const userToken = user?.JwtToken;
   const userName = user?.name;  
+  const userId = user?.id;
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -50,7 +51,7 @@ const useGetChats = () => {
     fetchChats();
   }, [userToken, toast]);
 
-  return { chats, loading, error, userToken, userName };
+  return { chats, loading, error, userToken, userName, userId };
 };
 
 export default useGetChats;

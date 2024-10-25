@@ -4,7 +4,8 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface Chat {
   id: string;
-  participantDetails: { name: string; imageUrl: string | null }[];
+  participantDetails: { name: string; imageUrl: string | null, email:string }[];
+  participants: { name: string; imageUrl: string | null, email:string }[];
   roomDetails: { title: string; imageUrl: string; description: string; price: number; location: string };
   status: string;
   createdAt: string;
@@ -24,10 +25,12 @@ const useGetPendingRequests = () => {
 
       try {
         const response = await fetch(`https://uniroom-backend-services.onrender.com/chats/${userToken}`);
+        
 
         if (!response.ok) throw new Error("Error al obtener las solicitudes.");
 
         const data = await response.json();
+        console.log("esta es la fokin data", data);
 
         // Filtrar solicitudes pendientes
         const pendingChats = data.chats.filter((chat: Chat) => chat.status === "pending");

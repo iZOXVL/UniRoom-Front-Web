@@ -3,37 +3,57 @@ import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import useGetApprovedChats from "@/components/Admin/hooks/useGetChats"; // Hook de chats
 import Loader from "@/components/common/Loader";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // Importar useRef
 import { io } from "socket.io-client"; // Asegúrate de tener socket.io-client instalado
 import { BiSearch, BiSend } from "react-icons/bi";
 import { IoAttach } from "react-icons/io5";
 import { SlEmotsmile } from "react-icons/sl";
 
 const Chat: React.FC = () => {
-  const { chats, loading, error, userToken, userName } = useGetApprovedChats(); // Obtener chats aprobados
+  const { chats, loading, error, userToken, userName, userId } = useGetApprovedChats(); // Obtener chats aprobados
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null); // Estado para el chat seleccionado
   const [messages, setMessages] = useState<any[]>([]); // Estado para los mensajes
   const [loadingMessages, setLoadingMessages] = useState(false); // Estado de carga de mensajes
   const [errorMessages, setErrorMessages] = useState<string | null>(null); // Estado de error en mensajes
   const [newMessage, setNewMessage] = useState<string>(""); // Estado para el nuevo mensaje
 
+  
+
   // Conexión al socket
   const socket = io("https://uniroom-backend-services.onrender.com"); // Asegúrate de usar la URL correcta
+
+  // Crear una referencia para el contenedor de mensajes
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Función para hacer scroll al final del contenedor de mensajes
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
     if (selectedChatId) {
       socket.emit("joinChat", selectedChatId); // Unirse al chat seleccionado
       fetchMessages(selectedChatId);
     }
-
+  
+    // Escuchar mensajes entrantes
     socket.on("message", (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]); // Agregar mensaje recibido
+      console.log("Nick", message);
+      // Solo añadir al estado `messages` si el mensaje no es propio
+      if (message.from !== userName) {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      }
     });
 
     return () => {
       socket.off("message"); // Limpiar el listener al desmontar el componente
     };
   }, [selectedChatId]);
+
+  // Hacer scroll al final cada vez que los mensajes cambien
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   // Función para obtener los mensajes del chat seleccionado
   const fetchMessages = async (chatId: string) => {
@@ -43,6 +63,8 @@ const Chat: React.FC = () => {
       if (!response.ok) throw new Error("Error al obtener los mensajes.");
 
       const data = await response.json();
+      console.log("Data", data);
+      console.log("Chats", chats);
       setMessages(data.messages); // Guardar los mensajes en el estado
       setErrorMessages(null);
     } catch (error: any) {
@@ -63,6 +85,8 @@ const Chat: React.FC = () => {
     event.preventDefault();
     if (!newMessage || !selectedChatId) return;
 
+    console.log("Mensaje enviado:", userName);
+
     const messageData = {
       chatId: selectedChatId,
       content: newMessage,
@@ -70,7 +94,12 @@ const Chat: React.FC = () => {
       token: userToken,
     };
 
+    // Añadir el mensaje directamente al estado `messages` como mensaje propio
+    setMessages((prevMessages) => [...prevMessages, { ...messageData, isOwnMessage: true }]);
+    setNewMessage("");
+
     try {
+      // Emitir el mensaje con el socket
       socket.emit("message", messageData);
 
       await fetch("https://uniroom-backend-services.onrender.com/save-message", {
@@ -85,7 +114,7 @@ const Chat: React.FC = () => {
         }),
       });
 
-      setNewMessage("");
+      
     } catch (error) {
       console.error("Error al enviar el mensaje:", error);
     }
@@ -186,45 +215,61 @@ const Chat: React.FC = () => {
               <div className="text-center text-red-500">Error: {errorMessages}</div>
             ) : (
               <div className="p-6 flex-grow overflow-auto">
-                {messages.length > 0 ? (
-                  <ul className="space-y-3.5">
-                    {messages.map((message, index) => (
-                      <li key={index} className={`max-w-125 ${message.nickname === userName ? 'ml-auto' : ''}`}>
-                        <div className={`mb-2.5 rounded-2xl px-5 py-3 ${message.nickname === userName ? 'bg-primary text-white rounded-br-none' : 'bg-gray-200 dark:bg-strokedark rounded-tl-none'}`}>
-                          <p>{message.content}</p>
-                        </div>
-                        <p className={`text-xs ${message.nickname === userName ? 'text-right' : 'text-left'}`}>
-                          {message.nickname === userName ? "Tú" : message.nickname}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <div className="text-center">No hay mensajes en este chat.</div>
-                )}
-              </div>
+  {messages.length > 0 ? (
+    <ul className="space-y-4">
+      {messages.map((message, index) => (
+        <li
+          key={index}
+          className={`flex flex-col ${message.nickname === userName ? 'items-end' : 'items-start'}`}
+        >
+          <div
+            className={`inline-block mb-1.5 rounded-2xl px-5 py-4 ${
+              message.nickname === userName
+                ? 'bg-primary text-white rounded-br-none'
+                : 'bg-gray-200 dark:bg-strokedark rounded-tl-none'
+            }`}
+          >
+            <p>{message.content}</p>
+          </div>
+          <p
+            className={`text-xs text-gray-500 ${message.nickname === userName ? 'text-right' : 'text-left'}`}
+          >
+            {message.nickname === userName ? 'Tú' : message.nickname}
+          </p>
+        </li>
+      ))}
+      {/* Este div vacío sirve como ancla para el scroll */}
+      <div ref={messagesEndRef}></div>
+    </ul>
+  ) : (
+    <p className="text-center text-gray-500">No hay mensajes en este chat.</p>
+  )}
+</div>
+
             )}
 
-            {/* Chat input */}
+            {/* Chat Input */}
             {selectedChatId && (
-              <form onSubmit={handleSendMessage} className="relative flex items-center justify-between border-t border-stroke p-5 dark:border-strokedark">
-                <input
-                  type="text"
-                  className="w-full rounded border border-stroke bg-gray-2 py-2.5 px-5 pr-16 text-black outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark-2 dark:text-white"
-                  placeholder="Escribe tu mensaje..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                />
-                <button className="absolute right-20">
-                  <IoAttach className="text-xl dark:text-white" />
-                </button>
-                <button className="absolute right-10">
-                  <SlEmotsmile className="text-xl dark:text-white" />
-                </button>
-                <button type="submit" className="absolute right-4 text-xl">
-                  <BiSend className="dark:text-white" />
-                </button>
-              </form>
+              <div className="border-t border-stroke p-5 dark:border-strokedark">
+                <form className="relative" onSubmit={handleSendMessage}>
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Escribe tu mensaje..."
+                    className="w-full rounded border border-stroke bg-gray-2 py-3.5 pl-5 pr-20 outline-none focus:border-primary dark:border-strokedark dark:bg-boxdark-2 dark:text-white"
+                  />
+                  <button className="absolute right-4 top-1/2 -translate-y-1/2" type="submit">
+                    <BiSend size={20} />
+                  </button>
+                  <button className="absolute right-12 top-1/2 -translate-y-1/2" type="button">
+                    <IoAttach size={20} />
+                  </button>
+                  <button className="absolute right-20 top-1/2 -translate-y-1/2" type="button">
+                    <SlEmotsmile size={20} />
+                  </button>
+                </form>
+              </div>
             )}
           </div>
         </div>

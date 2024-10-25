@@ -36,10 +36,13 @@ const TableRequests = () => {
   }
 
   // Manejar la aprobación de la solicitud
-  const handleApprove = async (chatId: string) => {
+  const handleApprove = async (chatId: string, email: string, title: string) => {
     try {
+      console.log(email, title, chatId);
       const response = await axios.post("https://uniroom-backend-services.onrender.com/update-status", {
         chatId,
+        email,
+        title,
         status: "approved",
       });
 
@@ -110,7 +113,7 @@ const TableRequests = () => {
                   <Tooltip content="Aceptar solicitud" color="success">
                     <span
                       className="cursor-pointer text-2xl text-success active:opacity-50"
-                      onClick={() => handleApprove(chat.id)}
+                      onClick={() => handleApprove(chat.id, chat.participants[1]?.email, chat.roomDetails?.title)}
                     >
                       <FaCheck />
                     </span>
