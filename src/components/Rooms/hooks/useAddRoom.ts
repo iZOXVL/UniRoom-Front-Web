@@ -24,7 +24,9 @@ const useAddRoom = () => {
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
+  
   const addRoom = async (data: RoomData): Promise<number | null> => {
+
     setIsLoading(true);
   
     try {
@@ -73,6 +75,7 @@ const useAddRoom = () => {
       
     } catch (error) {
       console.error(error);
+
       toast({
         title: "Error",
         description: "Hubo un problema al publicar la habitación.",

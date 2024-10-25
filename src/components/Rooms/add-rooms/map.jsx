@@ -71,6 +71,7 @@ export default function Map({ onSelectLocation }) {
           type="text"
           placeholder="Ingrese una dirección"
           className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+          required
         />
       </Autocomplete>
       <GoogleMap

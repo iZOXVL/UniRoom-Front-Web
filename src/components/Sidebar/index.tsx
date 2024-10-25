@@ -8,9 +8,8 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { IoBed } from "react-icons/io5";
-import { TbFlagDiscount } from "react-icons/tb";
-import { RiDiscountPercentFill, RiMoneyDollarCircleFill } from "react-icons/ri";
-import { FaBoxes } from "react-icons/fa";
+import { FaGears } from "react-icons/fa6";
+import { BsFileEarmarkBarGraphFill } from "react-icons/bs";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -30,6 +29,29 @@ const menuGroups = [
         children: [
           { label: "Publicar habitación", route: "/rooms/add-room" },
           { label: "Mis habitaciones", route: "/rooms/list-room" },
+        ],
+      },
+      {
+        icon: (
+          <FaGears />
+        ),
+        label: "Administración",
+        route: "#",
+        children: [
+          { label: "Solicitudes", route: "/admin/requests" },
+          { label: "Chats", route: "/admin/chats" },
+          { label: "Recibos", route: "/" },
+        ],
+      },
+      {
+        icon: (
+          <BsFileEarmarkBarGraphFill />
+        ),
+        label: "Estadísticas",
+        route: "#",
+        children: [
+          { label: "Reportes", route: "/"},
+          { label: "Graficas", route: "/" },
         ],
       },
     ],

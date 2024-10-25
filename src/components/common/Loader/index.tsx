@@ -12,7 +12,6 @@ const Loader = () => {
         style={{ height: '320px', width: '320px' }}
       >
       </DotLottiePlayer>
-      <h1 className="text-xl font-bold text-gray-800 dark:text-white">Cargando...</h1>
     </div>
   );
 };

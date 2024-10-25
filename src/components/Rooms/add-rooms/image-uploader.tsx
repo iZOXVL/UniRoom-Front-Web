@@ -74,6 +74,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onImagesChange, onVideosC
         className="cursor-pointer p-6 flex flex-col justify-center items-center bg-white dark:border-dark-3 dark:bg-gray-dark dark:shadow-card dark:text-white border-2 border-stroke rounded-xl"
         onDrop={(e) => handleDrop(e, "image")}
         onDragOver={handleDragOver}
+        
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
