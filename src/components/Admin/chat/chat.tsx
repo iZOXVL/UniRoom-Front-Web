@@ -94,40 +94,20 @@ const onEmojiClick = (emojiObject: EmojiClickData) => {
   const handleSendMessage = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!newMessage || !selectedChatId) return;
-
-    console.log("Mensaje enviado:", userName);
-
+  
     const messageData = {
       chatId: selectedChatId,
       content: newMessage,
       nickname: userName,
       token: userToken,
     };
-
+  
+    // Emitir el mensaje con el socket
+    socket.emit("message", messageData);
+  
     // Añadir el mensaje directamente al estado `messages` como mensaje propio
     setMessages((prevMessages) => [...prevMessages, { ...messageData, isOwnMessage: true }]);
-    setNewMessage("");
-
-    try {
-      // Emitir el mensaje con el socket
-      socket.emit("message", messageData);
-
-      await fetch("https://uniroom-backend-services.onrender.com/save-message", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token: messageData.token,
-          chatId: messageData.chatId,
-          content: messageData.content,
-        }),
-      });
-
-
-    } catch (error) {
-      console.error("Error al enviar el mensaje:", error);
-    }
+    setNewMessage(""); // Limpiar el campo de entrada
   };
 
   if (loading) {
