@@ -37,16 +37,14 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Separador */}
       <div className="flex justify-center items-center">
         <div className="w-0.5 h-[60%] bg-[#2b5973] mx-5"></div>
       </div>
-      
-      {/* Columna derecha */}
+
       <div className="w-full md:w-1/2 flex flex-col items-center justify-center space-y-8 p-8">
-        {/* Encabezado oculto en pantallas pequeñas */}
+    
         <h1 className={cn("hidden md:block text-2xl font-semibold text-black drop-shadow-md text-center")}>
-          {formType === 'login' ? "Accede a tu espacio en UniRoom 🚪✨" : formType === 'register' ? "Únete a la comunidad de UniRoom 🤝🌟" : "Recupera tu contraseña y vuelve a empezar 🔑🔄"}
+          {formType === 'login' ? "Inicio de sesión Jose Angel 🚪✨" : formType === 'register' ? "Únete a la comunidad de UniRoom 🤝🌟" : "Recupera tu contraseña y vuelve a empezar 🔑🔄"}
         </h1>
         
         {formType === 'login' && <LoginForm />}
