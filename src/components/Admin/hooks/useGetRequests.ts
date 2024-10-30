@@ -4,14 +4,15 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface Chat {
   id: string;
-  participantDetails: { name: string; imageUrl: string | null, email:string }[];
-  participants: { name: string; imageUrl: string | null, email:string }[];
+  participantDetails: { name: string; imageUrl: string | null; email: string }[];
+  participants: { name: string; imageUrl: string | null; email: string }[];
   roomDetails: { title: string; imageUrl: string; description: string; price: number; location: string };
+  roomId:string;
   status: string;
   createdAt: string;
 }
 
-const useGetPendingRequests = () => {
+const useGetPendingRequests = (roomId?: string) => {
   const user = useCurrentUser();
   const userToken = user?.JwtToken;
   const [chats, setChats] = useState<Chat[]>([]);
@@ -19,22 +20,23 @@ const useGetPendingRequests = () => {
   const [error, setError] = useState<Error | null>(null);
   const toast = useToast();
 
+
   useEffect(() => {
     const fetchRequests = async () => {
       setLoading(true);
 
       try {
-        const response = await fetch(`https://uniroom-backend-services.onrender.com/chats/${userToken}`);
-        
+        const response = await fetch(`https://uniroom-backend-services.onrender.com/chats-request/${userToken}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "pending", roomId }), // Enviar roomId si está definido
+        });
 
         if (!response.ok) throw new Error("Error al obtener las solicitudes.");
 
         const data = await response.json();
-        console.log("esta es la fokin data", data);
-
-        // Filtrar solicitudes pendientes
-        const pendingChats = data.chats.filter((chat: Chat) => chat.status === "pending");
-        setChats(pendingChats);
+        console.log("Data:", data); 
+        setChats(data.chats);
       } catch (error: any) {
         setError(error);
         toast({
@@ -50,9 +52,10 @@ const useGetPendingRequests = () => {
     };
 
     fetchRequests();
-  }, [userToken, toast]);
+  }, [userToken, roomId, toast]);
 
   return { chats, loading, error };
 };
+
 
 export default useGetPendingRequests;
