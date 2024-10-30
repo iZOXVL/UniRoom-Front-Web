@@ -81,7 +81,6 @@ const TableRequests = () => {
     </Button>
   </DropdownTrigger>
   <DropdownMenu aria-label="Cambiar habitación">
-    <DropdownItem onClick={() => handleRoomChange()}>Todas</DropdownItem>
     {chats.map(chat => (
       <DropdownItem 
         key={chat.roomId} 
