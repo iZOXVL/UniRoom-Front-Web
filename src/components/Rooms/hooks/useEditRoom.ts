@@ -4,6 +4,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface RoomData {
   titulo: string;
+  id: any;
   descripcion: string;
   lat: number | undefined;
   lng: number | undefined;
@@ -18,25 +19,26 @@ interface RoomData {
   address: string;
 }
 
-const useAddRoom = () => {
+const useEditRoom = () => {
   const user = useCurrentUser();
   const userToken = user?.JwtToken; 
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
   
-  const addRoom = async (data: RoomData): Promise<number | null> => {
+  const editRoom = async (data: RoomData): Promise<number | null> => {
 
     setIsLoading(true);
   
     try {
-      const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/AddRoom", {
+      const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/UpdateRoom", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           token: userToken,
+          id: data.id,
           title: data.titulo,
           description: data.descripcion,
           price: data.price,
@@ -47,30 +49,32 @@ const useAddRoom = () => {
           allowPets: data.allowPets,
           sharedStatus: data.sharedStatus,
           status: "Publicada",
-          location: {
+          locationUpdate: {
             address: data.address,
             latitude: data.lat,
             longitude: data.lng,
           },
-          propertyFeaturesAggregates: {
+          propertyFeaturesUpdate: {
             featureId: data.services,
           },
-          rulesAggregates: {
+          rulesUpdate: {
             ruleId: data.rules,
           },
         }),
       });
-  
-      if (!response.ok) throw new Error("Error al crear la habitación.");
-  
-      const room = await response.json();
 
-      console.log("respuesta de la appi:",room);
+      console.log("data:",response);
+  
+      if (!response.ok) throw new Error("Error al editar la habitación.");
+  
+      const apiResponse = await response.json();
+
+      console.log("respuesta de la appi:",apiResponse.tipoError);
       
-      if (room && room.roomId) {
-        return room.roomId; 
+      if (apiResponse && apiResponse.tipoError === 1) {
+        return apiResponse.tipoError; 
       } else {
-        throw new Error("No se recibió roomId de la API.");
+        throw new Error("Error al editar la habitación.");
       }
       
     } catch (error) {
@@ -78,7 +82,7 @@ const useAddRoom = () => {
 
       toast({
         title: "Error",
-        description: "Hubo un problema al publicar la habitación.",
+        description: "Hubo un problema al editar la habitación.",
         status: "error",
         duration: 9000,
         isClosable: true,
@@ -91,7 +95,7 @@ const useAddRoom = () => {
   
   
 
-  return { addRoom, isLoading };
+  return { editRoom, isLoading };
 };
 
-export default useAddRoom;
+export default useEditRoom;

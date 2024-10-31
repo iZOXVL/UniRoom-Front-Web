@@ -38,7 +38,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Separador */}
       <div className="flex justify-center items-center">
         <div className=" h-[60%] bg-[#2b5973] mx-5"></div>
       </div>

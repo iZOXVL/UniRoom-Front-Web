@@ -9,7 +9,7 @@ interface ApprovalModalProps {
 
 const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, chat }) => {
   return (
-    <Modal isOpen={isOpen} onOpenChange={onClose}>
+    <Modal isOpen={isOpen} onOpenChange={onClose} backdrop="blur" className="z-1">
       <ModalContent>
         <ModalHeader>Solicitud Aprobada</ModalHeader>
         <ModalBody>

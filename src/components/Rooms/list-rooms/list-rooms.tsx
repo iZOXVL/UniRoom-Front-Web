@@ -24,23 +24,34 @@ import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import Loader from "@/components/common/Loader";
 import useGetRooms from "@/components/Rooms/hooks/useGetRoom";
-import { useCurrentUser } from "@/hooks/use-current-user"; 
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { MdDelete } from "react-icons/md";
+import { useToast } from "@chakra-ui/react";
+import { IoIosArrowDown, IoMdCheckmark, IoMdClose, IoMdPause } from "react-icons/io";
 
-// Función para truncar texto y mostrar un tooltip si es muy largo
-const truncateText = (text: string, maxLength: number) => {
-  return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+// Función para truncar texto
+const truncateText = (text: string, maxLength: number) =>
+  text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+
+// Mapa para asignar colores según el estado
+const statusColorMap: { [key: string]: "success" | "warning" | "danger" | "default" } = {
+  Publicada: "success",
+  Pausada: "warning",
+  Ocupada: "danger",
+  Eliminar: "danger",
 };
 
 const TableRooms = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [filterValue, setFilterValue] = useState("");
+  const [statusByRoom, setStatusByRoom] = useState<{ [key: string]: string }>({});
   const [pendingCounts, setPendingCounts] = useState<{ [key: string]: number }>({});
   const [approvedCounts, setApprovedCounts] = useState<{ [key: string]: number }>({});
-  
+
   const { habitaciones, totalRooms, loading, error } = useGetRooms(page, pageSize);
-  const user = useCurrentUser(); 
+  const user = useCurrentUser();
+  const toast = useToast();
 
   const filteredItems = useMemo(() => {
     if (!filterValue) return habitaciones;
@@ -49,7 +60,48 @@ const TableRooms = () => {
     );
   }, [filterValue, habitaciones]);
 
-  // Obtener los contadores de solicitudes pendientes y aprobadas
+  const handleStatusChange = async (roomId: string, newStatus: string) => {
+    if (!user?.JwtToken) return;
+
+    try {
+      const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/UpdateRoomStatus", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: user.JwtToken,
+          roomId,
+          status: newStatus,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error al actualizar el estado.");
+
+      setStatusByRoom((prevStatus) => ({
+        ...prevStatus,
+        [roomId]: newStatus,
+      }));
+
+      toast({
+        title: "Éxito",
+        description: `El estado de la habitación ha sido cambiado a ${newStatus}.`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al actualizar el estado de la habitación.",
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchChats = async () => {
       if (!user?.JwtToken) return;
@@ -63,7 +115,6 @@ const TableRooms = () => {
 
         data.chats.forEach((chat: any) => {
           const roomId = chat.roomId;
-
           if (chat.status === "pending") {
             pendingCountsTemp[roomId] = (pendingCountsTemp[roomId] || 0) + 1;
           } else if (chat.status === "approved") {
@@ -81,19 +132,24 @@ const TableRooms = () => {
     fetchChats();
   }, [user?.JwtToken]);
 
-  if (loading) {
-    return <Loader />;
-  }
+  useEffect(() => {
+    const initialStatus = habitaciones.reduce((acc, room) => {
+      acc[room.roomId] = room.status;
+      return acc;
+    }, {} as { [key: string]: string });
 
-  if (error) {
-    return <div className="text-center text-red-500">Error: {error.message}</div>;
-  }
+    setStatusByRoom(initialStatus);
+  }, [habitaciones]);
+
+  if (loading) return <Loader />;
+  if (error) return <div className="text-center text-red-500">Error: {error.message}</div>;
+
+  const iconClasses = "text-lg text-withe pointer-events-none flex-shrink-0";
 
   return (
     <div>
       <Breadcrumb pageName="Mis habitaciones" />
       <div className="flex justify-between gap-3 items-end mb-4">
-        {/* Barra de búsqueda */}
         <Input
           isClearable
           placeholder="Buscar por título..."
@@ -103,10 +159,9 @@ const TableRooms = () => {
           onValueChange={setFilterValue}
         />
 
-        {/* Dropdown para seleccionar la cantidad de registros por página */}
-        <Dropdown>
+        <Dropdown backdrop="opaque">
           <DropdownTrigger>
-            <Button variant="bordered">{pageSize} por página</Button>
+            <Button variant="flat">{pageSize} por página</Button>
           </DropdownTrigger>
           <DropdownMenu
             aria-label="Selecciona cuántos registros mostrar por página"
@@ -124,7 +179,6 @@ const TableRooms = () => {
           </DropdownMenu>
         </Dropdown>
 
-        {/* Botón para añadir habitación */}
         <Link href="/rooms/add-room" passHref>
           <Button color="primary" startContent={<FaPlus />}>
             Añadir habitación
@@ -143,7 +197,6 @@ const TableRooms = () => {
         <TableBody>
           {filteredItems.map((room) => (
             <TableRow key={room.roomId}>
-              {/* Imagen de la habitación */}
               <TableCell>
                 <Image
                   src={room.multimedia || "/images/notImage.png"}
@@ -156,45 +209,56 @@ const TableRooms = () => {
               </TableCell>
 
               <TableCell>
-                <div>
-                  <p className="font-semibold">{room.title}</p>
+              <div>
+                  <p className="font-semibold">{room?.title}</p>
                   <Tooltip content={room.address || ""} placement="top-start">
-                    <p className="text-sm text-default-400">
-                      {truncateText(room.address || "", 40)}
-                    </p>
-                  </Tooltip>
+                  <p className="text-sm text-default-400">
+                    {truncateText(room.address || "", 38)}
+                  </p>
+                </Tooltip>
                 </div>
               </TableCell>
 
-              {/* Estado */}
               <TableCell>
-                <Chip color={room.status ? "success" : "warning"}>
-                  {room.status}
-                </Chip>
+                <Dropdown backdrop="opaque">
+                  <DropdownTrigger>
+                    <Button 
+                      color={statusColorMap[statusByRoom[room.roomId]] || "default"}
+                      variant="flat"
+                      className="w-32"
+                    >
+                      {statusByRoom[room.roomId] || room.status}
+                      <IoIosArrowDown className="ml-1" />
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu
+                    aria-label="Cambiar estado de la habitación"
+                    onAction={(newStatus) => handleStatusChange(room.roomId, newStatus as string)}
+                  >
+                    <DropdownItem color="success" description="La habitación está visible para los usuarios." startContent={<IoMdCheckmark className={iconClasses} />}  key="Publicada">Publicada</DropdownItem>
+                    <DropdownItem color="warning" showDivider description="La habitación está temporalmente pausada." startContent={<IoMdPause className={iconClasses} />}  key="Pausada">Pausada</DropdownItem>
+                    <DropdownItem color="danger"  description="La habitación está ocupada." startContent={<IoMdClose className={iconClasses} />} key="Ocupada">Ocupada</DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
               </TableCell>
 
-              {/* Solicitudes */}
               <TableCell>
                 <Chip color="warning" variant="flat">
-                Solicitudes: {pendingCounts[room.roomId] || 0}
+                  Solicitudes: {pendingCounts[room.roomId] || 0}
                 </Chip>
                 <Chip color="success" variant="flat" className="ml-2">
                   Chats: {approvedCounts[room.roomId] || 0}
                 </Chip>
               </TableCell>
 
-              {/* Acciones */}
               <TableCell>
                 <div className="flex items-center gap-3">
                   <Tooltip content="Editar habitación" color="primary">
-                    <span className="cursor-pointer text-2xl text-primary active:opacity-50">
-                      <FaEdit />
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Eliminar habitación" color="danger">
-                    <span className="cursor-pointer text-2xl text-danger active:opacity-50">
-                      <MdDelete />
-                    </span>
+                  <Link href={`/rooms/edit-room?roomId=${room.roomId}`}>
+                   <span className="cursor-pointer text-2xl text-primary active:opacity-50">
+                  <FaEdit />
+                 </span>
+                  </Link>
                   </Tooltip>
                 </div>
               </TableCell>
@@ -204,10 +268,7 @@ const TableRooms = () => {
       </Table>
 
       <div className="py-4 flex justify-between items-center">
-        <span className="text-small text-default-400">
-          Total {totalRooms} habitaciones
-        </span>
-
+        <span className="text-small text-default-400">Total {totalRooms} habitaciones</span>
         <Pagination
           page={page}
           total={Math.ceil(totalRooms / pageSize)}
