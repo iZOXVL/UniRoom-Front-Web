@@ -103,6 +103,9 @@ body,
   color: #ffffff; /* Color del texto seleccionado */
 }
 
+.clip-blob {
+  clip-path: path("M 0 0 C 50 0, 90 10, 100 50 S 100 90, 0 100");
+}
 
 
 }

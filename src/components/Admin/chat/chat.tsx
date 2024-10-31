@@ -36,7 +36,7 @@ const Chat: React.FC = () => {
  // Actualiza la función para que solo reciba el parámetro de emoji
 const onEmojiClick = (emojiObject: EmojiClickData) => {
   setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
-  setIsPickerVisible(false); // Cierra el picker después de seleccionar el emoji
+ // setIsPickerVisible(false); // Cierra el picker después de seleccionar el emoji
 };
 
 
@@ -196,6 +196,7 @@ const onEmojiClick = (emojiObject: EmojiClickData) => {
           {/* Chat Box */}
           <div className="flex h-full flex-col border-l border-stroke dark:border-dark-3 dark:bg-gray-dark xl:w-3/4">
             {selectedChatId && (
+              
               <div className="sticky flex items-center justify-between border-b border-stroke px-6 py-4.5 dark:border-dark-3 dark:bg-gray-dark">
                 <div className="flex items-center">
                   <div className="mr-4.5 h-13 w-full max-w-13 overflow-hidden rounded-full">
@@ -222,7 +223,9 @@ const onEmojiClick = (emojiObject: EmojiClickData) => {
             {loadingMessages ? (
               <Loader />
             ) : errorMessages ? (
-              <div className="text-center text-red-500">Error: {errorMessages}</div>
+              <div className="text-center text-red-500">Error: {errorMessages}   
+              </div>
+              
             ) : (
               <div className="p-6 flex-grow overflow-auto">
                 {messages.length > 0 ? (
@@ -266,13 +269,14 @@ const onEmojiClick = (emojiObject: EmojiClickData) => {
                     >
                     </DotLottiePlayer>
                     <h1 className="text-3xl font-bold text-black dark:text-slate-200 text-center">
-                      Conversa con tus futuros inquilinos
+                      Chatea con tus proximos inquilinos
                     </h1>
                     <p className="text-lg text-gray-600 dark:text-gray-300 mt-2 text-center">
                       Conéctate con estudiantes interesados, responde sus preguntas y facilita el proceso de renta de tus habitaciones.
                     </p>
                   </div>
-                )}
+                )
+                }
               </div>
 
             )}
@@ -297,13 +301,14 @@ const onEmojiClick = (emojiObject: EmojiClickData) => {
                   <button
                     className="absolute right-20 top-1/2 -translate-y-1/2"
                     type="button"
-                    onClick={() => setIsPickerVisible(!isPickerVisible)} // Alterna el picker
+                    onClick={() => setIsPickerVisible(!isPickerVisible)} 
                   >
                     <SlEmotsmile size={20} />
                   </button>
                   {isPickerVisible && (
                     <div className="absolute bottom-full right-0 mb-2">
-                      <EmojiPicker onEmojiClick={onEmojiClick} />
+                      <EmojiPicker onEmojiClick={onEmojiClick}
+                      />
                     </div>
                   )}
                 </form>

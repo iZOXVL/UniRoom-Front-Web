@@ -16,8 +16,8 @@ const ApprovalModal: React.FC<ApprovalModalProps> = ({ isOpen, onClose, chat }) 
           <p>La solicitud para la habitación {chat.roomDetails.title} ha sido aprobada con éxito.</p>
         </ModalBody>
         <ModalFooter>
-          <Button color="primary" onPress={() => window.location.href = "/mis-habitaciones"}>
-            Ir a Mis Habitaciones
+          <Button color="primary" onPress={() => window.location.href = "/chat"}>
+            Ir a chats
           </Button>
           <Button color="danger" variant="light" onPress={onClose}>
             Cerrar

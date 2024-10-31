@@ -8,19 +8,19 @@ export const newVerification = async (token: string) => {
   // Busca el token de verificación en la base de datos
   const existingToken = await getVerificationTokenByToken(token);
   if (!existingToken) {
-    return { error: "El token no existe!" };
+    return { error: "¡El token no existe!" };
   }
 
   // Verifica si el token ha expirado
   const hasExpired = new Date(existingToken.expires) < new Date();
   if (hasExpired) {
-    return { error: "El token ha expirado!" };
+    return { error: "¡El token ha expirado!" };
   }
 
   // Busca al usuario asociado al token
   const existingUser = await getUserByEmail(existingToken.email);
   if (!existingUser) {
-    return { error: "El correo no existe!" };
+    return { error: "¡El correo no existe!" };
   }
 
   // Actualiza el estado de verificación del correo del usuario
@@ -37,5 +37,5 @@ export const newVerification = async (token: string) => {
     where: { id: existingToken.id }
   });
 
-  return { success: "Hecho, correo verificado!" };
+  return { success: "Hecho, ¡correo verificado!" };
 };

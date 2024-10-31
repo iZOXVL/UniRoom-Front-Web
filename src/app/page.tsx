@@ -7,6 +7,7 @@ import { RegisterForm } from "@/components/Auth/register-form";
 import { ResetForm } from "@/components/Auth/reset-form"; 
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { Card, CardHeader } from "@chakra-ui/react";
 
 export default function Home() {
   const [formType, setFormType] = useState<'login' | 'register' | 'reset'>('login');
@@ -14,7 +15,7 @@ export default function Home() {
   return (
     <main className="flex flex-col md:flex-row h-screen">
       {/* Columna izquierda */}
-      <div className="flex flex-col items-center justify-center w-full md:w-1/2 p-6">
+      <div className="flex flex-col items-center justify-center w-full md:w-1/2 p-6 ">
       <img
   src="logos/logo_negro.png"
   alt="UniRoom Logo"
@@ -39,15 +40,16 @@ export default function Home() {
 
       {/* Separador */}
       <div className="flex justify-center items-center">
-        <div className="w-0.5 h-[60%] bg-[#2b5973] mx-5"></div>
+        <div className=" h-[60%] bg-[#2b5973] mx-5"></div>
       </div>
       
       {/* Columna derecha */}
-      <div className="w-full md:w-1/2 flex flex-col items-center justify-center space-y-8 p-8">
-        {/* Encabezado oculto en pantallas pequeñas */}
+      <div className="w-full md:w-1/2 flex flex-col items-center justify-center space-y-8 bg-primary">
+          {/* Encabezado oculto en pantallas pequeñas */}
         <h1 className={cn("hidden md:block text-2xl font-semibold text-black drop-shadow-md text-center")}>
-          {formType === 'login' ? "Accede a tu espacio en UniRoom 🚪✨" : formType === 'register' ? "Únete a la comunidad de UniRoom 🤝🌟" : "Recupera tu contraseña y vuelve a empezar 🔑🔄"}
+          {formType === 'login' ? "Accede a tu espacio en UniRoom" : formType === 'register' ? "Únete a la comunidad de UniRoom" : "Recupera tu contraseña y vuelve a empezar"}
         </h1>
+        
         
         {formType === 'login' && <LoginForm />}
         {formType === 'register' && <RegisterForm />}
@@ -56,10 +58,11 @@ export default function Home() {
         <motion.div>
           {formType === 'login' && (
             <>
-              <Button variant="link" onClick={() => setFormType('register')} className="text-sm text-gray-500 hover:underline">
+              <Button variant="link" onClick={() => setFormType('register')} className="items-center justify-center text-sm text-center text-gray-500 hover:underline">
                 ¿No tienes cuenta? Regístrate aquí.
               </Button>
-              <Button variant="link" onClick={() => setFormType('reset')} className="text-sm text-gray-500 hover:underline">
+              <br />
+              <Button variant="link" onClick={() => setFormType('reset')} className="items-center justify-center text-sm text-gray-500 text-center hover:underline">
                 ¿Olvidaste tu contraseña? Restablecer aquí.
               </Button>
             </>
@@ -75,6 +78,7 @@ export default function Home() {
             </Button>
           )}
         </motion.div>
+        
       </div>
     </main>
   );

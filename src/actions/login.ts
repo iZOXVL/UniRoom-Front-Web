@@ -52,7 +52,7 @@ export const login = async (values: z.infer<typeof LoginSchema>, callbackUrl?: s
   if (!existingUser.emailVerified) { // Verifica si el correo del usuario está verificado
     const verificationToken = await generateVerificationToken(existingUser.email);
     await sendVerificationEmail(verificationToken.email, verificationToken.token);
-    return { success: "Correo de confirmación enviado" }; // Retorna mensaje de envío de verificación
+    return { success: "¡Correo de confirmación enviado" }; // Retorna mensaje de envío de verificación
   }
 
   if (existingUser.isTwoFactorEnabled && existingUser.email) { // Verifica si el 2FA está habilitado
