@@ -67,6 +67,11 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onImagesChange, onVideosC
     e.preventDefault();
   };
 
+  const handleFileInputClick = (type: "image" | "video") => {
+    const fileInput = type === "image" ? document.getElementById('image-input') : document.getElementById('video-input');
+    fileInput?.click();
+  };
+
   return (
     <div className="grid grid-cols-2 gap-4">
       {/* Upload Area for Images */}
@@ -74,7 +79,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onImagesChange, onVideosC
         className="cursor-pointer p-6 flex flex-col justify-center items-center bg-white dark:border-dark-3 dark:bg-gray-dark dark:shadow-card dark:text-white border-2 border-stroke rounded-xl"
         onDrop={(e) => handleDrop(e, "image")}
         onDragOver={handleDragOver}
-        
+        onClick={() => handleFileInputClick("image")}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -102,6 +107,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onImagesChange, onVideosC
                 accept="image/*"
                 onChange={(e) => handleMediaChange(Array.from(e.target.files || []), "image")}
                 className="hidden"
+                id="image-input"
               />
               explora
             </label>
@@ -115,6 +121,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onImagesChange, onVideosC
         className="cursor-pointer p-6 flex flex-col justify-center items-center bg-white  dark:border-dark-3 dark:bg-gray-dark dark:shadow-card dark:text-white border-2 border-stroke rounded-xl"
         onDrop={(e) => handleDrop(e, "video")}
         onDragOver={handleDragOver}
+        onClick={() => handleFileInputClick("video")}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -142,6 +149,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onImagesChange, onVideosC
                 accept="video/*"
                 onChange={(e) => handleMediaChange(Array.from(e.target.files || []), "video")}
                 className="hidden"
+                id="video-input"
               />
               explora
             </label>

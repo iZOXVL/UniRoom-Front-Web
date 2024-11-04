@@ -50,6 +50,23 @@ const AddRoomForm = () => {
     setVideos(newVideos);
   };
 
+  const resetForm = () => {
+    setTitulo("");
+    setPrice("");
+    setDescripcion("");
+    setMaxPeople("");
+    setMinTime("");
+    setMaxTime("");
+    setAllowPets(false);
+    setSharedStatus(false);
+    setLocation({ lat: undefined, lng: undefined, address: undefined });
+    setSelectedServices([]);
+    setSelectedRules([]);
+    setImages([]);
+    setVideos([]);
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -73,7 +90,7 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    }   
+    }
 
     if (price == "0") {
       toast({
@@ -84,7 +101,7 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    }   
+    }
 
     if (maxPeople == "0") {
       toast({
@@ -95,18 +112,8 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    }  
+    }
 
-    if (maxPeople == "0") {
-      toast({
-        title: "Error",
-        description: "El número de habitantes debe ser mayor a cero.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      return null;
-    }  
 
     if (minTime == "0") {
       toast({
@@ -117,7 +124,7 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    } 
+    }
 
     if (maxTime == "0") {
       toast({
@@ -128,7 +135,7 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    } 
+    }
 
     if (!descripcion) {
       toast({
@@ -139,7 +146,18 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    } 
+    }
+
+    if (descripcion.length > 250) {
+      toast({
+        title: "Error",
+        description: "La descripción no debe exceder los 250 caracteres.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    }
 
     if (!location.lat || !location.lng || !location.address) {
       toast({
@@ -171,10 +189,11 @@ const AddRoomForm = () => {
     const roomPromise = new Promise(async (resolve, reject) => {
       try {
         const roomId = await addRoom(roomData);
-        console.log("Esta es la room:",roomId);
+        console.log("Esta es la room:", roomId);
         if (roomId) {
           await uploadMedia(roomId, images, videos);
           confetti.onOpen();
+          resetForm();
           resolve(roomId);
         } else {
           reject(new Error("Error al crear la habitación."));
@@ -219,16 +238,16 @@ const AddRoomForm = () => {
       showProgress: true,
       steps: guideSteps as any, // Ajuste rápido si necesitas omitir el tipado estricto
     });
-  
+
     driverObj.drive();
   };
 
   return (
     <>
-      <Breadcrumb pageName="Publicar habitación"/>
+      <Breadcrumb pageName="Publicar habitación" />
       <div className="flex flex-col gap-9">
         <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
-        <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3 flex justify-between items-center">
+          <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3 flex justify-between items-center">
             <h3 className="font-semibold text-dark dark:text-white">Ingresa la información de la habitación</h3>
             {/* Botón para iniciar guía de Driver.js */}
             <button
@@ -289,7 +308,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   )}
                 </label>
               </div>
-        </div>
+            </div>
 
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div id="input-titulo" className="w-full xl:w-4/6">
@@ -384,8 +403,12 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   rows={8}
+                  maxLength={250} 
                   className="w-full h-[288px] rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white resize-none dark:active:border-primary"
                 />
+                <div className="text-right text-gray-500">
+                  {descripcion.length}/250 caracteres
+                </div>
               </div>
               <div id="map-ubicacion" className="w-full xl:w-1/2">
                 <label className="mb-3 text-body-m font-semibold text-dark dark:text-white flex items-center ">
@@ -412,7 +435,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                         type="button"
                         onClick={() => handleServiceClick(servicio.id)}
                         className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${isSelected ? 'border-primary bg-gray-200 dark:border-primary dark:bg-dark' : 'border-gray-300 dark:bg-dark-2 dark:border-dark-3'}`}
-                      
+
                       >
                         <DotLottiePlayer src={servicio.animation} autoplay hover style={{ width: '40px', height: '40px' }} />
                         <span className="text-sm font-medium">{servicio.label}</span>
