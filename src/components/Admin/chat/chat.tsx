@@ -121,9 +121,9 @@ const onEmojiClick = (emojiObject: EmojiClickData) => {
   return (
     <>
       <Breadcrumb pageName="Conversaciones" />
-      <div className="h-[calc(93vh-186px)] overflow-hidden sm:h-[calc(93vh-174px)]">
+      <div className="h-[calc(93vh-186px)] sm:h-[calc(93vh-174px)]">
         <div className="h-full rounded-sm border border-stroke bg-white shadow-default dark:border-dark-3 dark:bg-gray-dark xl:flex">
-          <div className="hidden h-full flex-col xl:flex xl:w-1/4">
+          <div className=" h-full flex-col xl:flex xl:w-1/4">
             {/* Chat List Header */}
             <div className="sticky border-b border-stroke px-6 py-7.5 dark:border-dark-3 dark:bg-gray-dark">
               <h3 className="text-lg font-medium text-black dark:text-white 2xl:text-xl">
@@ -173,12 +173,13 @@ const onEmojiClick = (emojiObject: EmojiClickData) => {
             </div>
           </div>
 
+                <br />
           {/* Chat Box */}
-          <div className="flex h-full flex-col border-l border-stroke dark:border-dark-3 dark:bg-gray-dark xl:w-3/4">
+          <div className="flex h-full flex-col border-l  sm:shadow-none shadow-default border-stroke dark:border-dark-3 dark:bg-gray-dark xl:w-3/4">
             {selectedChatId && (
               <div className="sticky flex items-center justify-between border-b border-stroke px-6 py-4.5 dark:border-dark-3 dark:bg-gray-dark">
                 <div className="flex items-center">
-                  <div className="mr-4.5 h-13 w-full max-w-13 overflow-hidden rounded-full">
+                  <div className="mr-4.5 h-13 w-full max-w-13 rounded-full">
                     <Image
                       src={chats.find(chat => chat.id === selectedChatId)?.participantDetails[1]?.imageUrl || "/images/default-avatar.png"}
                       alt="avatar"
