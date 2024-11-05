@@ -22,7 +22,7 @@ const useGetAllRooms = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:4000/chats-request/${userToken}`,
+          `https://uniroom-backend-services.onrender.com/chats-request/${userToken}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
