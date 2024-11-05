@@ -67,7 +67,7 @@ const useGetRoomDetails = (roomId: number | null) => {
 
         const data = await response.json();
         setRoomDetails(data);
-        console.log("Room details:", data); // Imprime los detalles en la consola para depuración
+
       } catch (error: any) {
         console.error(error);
         setError(error);

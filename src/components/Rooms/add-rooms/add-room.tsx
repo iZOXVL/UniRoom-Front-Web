@@ -189,7 +189,6 @@ const AddRoomForm = () => {
     const roomPromise = new Promise(async (resolve, reject) => {
       try {
         const roomId = await addRoom(roomData);
-        console.log("Esta es la room:", roomId);
         if (roomId) {
           await uploadMedia(roomId, images, videos);
           confetti.onOpen();

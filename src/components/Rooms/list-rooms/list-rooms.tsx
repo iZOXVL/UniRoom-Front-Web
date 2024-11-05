@@ -27,14 +27,21 @@ import useGetRooms from "@/components/Rooms/hooks/useGetRoom";
 import { useCurrentUser } from "@/hooks/use-current-user";
 import { MdDelete } from "react-icons/md";
 import { useToast } from "@chakra-ui/react";
-import { IoIosArrowDown, IoMdCheckmark, IoMdClose, IoMdPause } from "react-icons/io";
+import {
+  IoIosArrowDown,
+  IoMdCheckmark,
+  IoMdClose,
+  IoMdPause,
+} from "react-icons/io";
 
 // Función para truncar texto
 const truncateText = (text: string, maxLength: number) =>
   text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 
 // Mapa para asignar colores según el estado
-const statusColorMap: { [key: string]: "success" | "warning" | "danger" | "default" } = {
+const statusColorMap: {
+  [key: string]: "success" | "warning" | "danger" | "default";
+} = {
   Publicada: "success",
   Pausada: "warning",
   Ocupada: "danger",
@@ -45,17 +52,26 @@ const TableRooms = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [filterValue, setFilterValue] = useState("");
-  const [statusByRoom, setStatusByRoom] = useState<{ [key: string]: string }>({});
-  const [pendingCounts, setPendingCounts] = useState<{ [key: string]: number }>({});
-  const [approvedCounts, setApprovedCounts] = useState<{ [key: string]: number }>({});
+  const [statusByRoom, setStatusByRoom] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const [pendingCounts, setPendingCounts] = useState<{ [key: string]: number }>(
+    {}
+  );
+  const [approvedCounts, setApprovedCounts] = useState<{
+    [key: string]: number;
+  }>({});
 
-  const { habitaciones, totalRooms, loading, error } = useGetRooms(page, pageSize);
+  const { habitaciones, totalRooms, loading, error } = useGetRooms(
+    page,
+    pageSize
+  );
   const user = useCurrentUser();
   const toast = useToast();
 
   const filteredItems = useMemo(() => {
-    if (!filterValue) return habitaciones;
-    return habitaciones.filter((room) =>
+    if (!filterValue) return habitaciones || [];
+    return (habitaciones || []).filter((room) =>
       room.title.toLowerCase().includes(filterValue.toLowerCase())
     );
   }, [filterValue, habitaciones]);
@@ -64,17 +80,20 @@ const TableRooms = () => {
     if (!user?.JwtToken) return;
 
     try {
-      const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/UpdateRoomStatus", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token: user.JwtToken,
-          roomId,
-          status: newStatus,
-        }),
-      });
+      const response = await fetch(
+        "https://uruniroom.azurewebsites.net/api/Rooms/UpdateRoomStatus",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: user.JwtToken,
+            roomId,
+            status: newStatus,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error("Error al actualizar el estado.");
 
@@ -94,7 +113,8 @@ const TableRooms = () => {
       console.error("Error updating status:", error);
       toast({
         title: "Error",
-        description: "Hubo un problema al actualizar el estado de la habitación.",
+        description:
+          "Hubo un problema al actualizar el estado de la habitación.",
         status: "error",
         duration: 9000,
         isClosable: true,
@@ -107,7 +127,9 @@ const TableRooms = () => {
       if (!user?.JwtToken) return;
 
       try {
-        const response = await fetch(`https://uniroom-backend-services.onrender.com/chats/${user.JwtToken}`);
+        const response = await fetch(
+          `https://uniroom-backend-services.onrender.com/chats/${user.JwtToken}`
+        );
         const data = await response.json();
 
         const pendingCountsTemp: { [key: string]: number } = {};
@@ -133,7 +155,7 @@ const TableRooms = () => {
   }, [user?.JwtToken]);
 
   useEffect(() => {
-    const initialStatus = habitaciones.reduce((acc, room) => {
+    const initialStatus = (habitaciones || []).reduce((acc, room) => {
       acc[room.roomId] = room.status;
       return acc;
     }, {} as { [key: string]: string });
@@ -141,10 +163,7 @@ const TableRooms = () => {
     setStatusByRoom(initialStatus);
   }, [habitaciones]);
 
-  if (loading) return <Loader />;
-  if (error) return <div className="text-center text-red-500">Error: {error.message}</div>;
-
-  const iconClasses = "text-lg text-withe pointer-events-none flex-shrink-0";
+  const iconClasses = "text-lg text-white pointer-events-none flex-shrink-0";
 
   return (
     <div>
@@ -169,7 +188,9 @@ const TableRooms = () => {
             disallowEmptySelection
             selectionMode="single"
             selectedKeys={new Set([String(pageSize)])}
-            onSelectionChange={(key) => setPageSize(Number(Array.from(key).join()))}
+            onSelectionChange={(key) =>
+              setPageSize(Number(Array.from(key).join()))
+            }
           >
             <DropdownItem key="5">5</DropdownItem>
             <DropdownItem key="10">10</DropdownItem>
@@ -186,96 +207,143 @@ const TableRooms = () => {
         </Link>
       </div>
 
-      <Table aria-label="Tabla de habitaciones" isHeaderSticky isStriped>
-        <TableHeader>
-          <TableColumn>Portada</TableColumn>
-          <TableColumn>Habitación</TableColumn>
-          <TableColumn>Estado</TableColumn>
-          <TableColumn>Solicitudes</TableColumn>
-          <TableColumn>Acciones</TableColumn>
-        </TableHeader>
-        <TableBody>
-          {filteredItems.map((room) => (
-            <TableRow key={room.roomId}>
-              <TableCell>
-                <Image
-                  src={room.multimedia || "/images/notImage.png"}
-                  alt={room.title}
-                  width={88}
-                  height={88}
-                  className="rounded-md"
-                  objectFit="cover"
-                />
-              </TableCell>
+      {/* Mostrar loader o error en el área de la tabla */}
+      {loading ? (
+        <Loader />
+      ) : error ? (
+        <div className="text-center text-red-500">
+          Error: {error.message}
+        </div>
+      ) : (
+        <>
+          <Table aria-label="Tabla de habitaciones" isHeaderSticky isStriped>
+            <TableHeader>
+              <TableColumn>Portada</TableColumn>
+              <TableColumn>Habitación</TableColumn>
+              <TableColumn>Estado</TableColumn>
+              <TableColumn>Solicitudes</TableColumn>
+              <TableColumn>Acciones</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {filteredItems.map((room) => (
+                <TableRow key={room.roomId}>
+                  <TableCell>
+                    <Image
+                      src={room.multimedia || "/images/notImage.png"}
+                      alt={room.title}
+                      width={88}
+                      height={88}
+                      className="rounded-md"
+                      objectFit="cover"
+                    />
+                  </TableCell>
 
-              <TableCell>
-              <div>
-                  <p className="font-semibold">{room?.title}</p>
-                  <Tooltip content={room.address || ""} placement="top-start">
-                  <p className="text-sm text-default-400">
-                    {truncateText(room.address || "", 38)}
-                  </p>
-                </Tooltip>
-                </div>
-              </TableCell>
+                  <TableCell>
+                    <div>
+                      <p className="font-semibold">{room?.title}</p>
+                      <Tooltip
+                        content={room.address || ""}
+                        placement="top-start"
+                      >
+                        <p className="text-sm text-default-400">
+                          {truncateText(room.address || "", 38)}
+                        </p>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
 
-              <TableCell>
-                <Dropdown backdrop="opaque">
-                  <DropdownTrigger>
-                    <Button 
-                      color={statusColorMap[statusByRoom[room.roomId]] || "default"}
-                      variant="flat"
-                      className="w-32"
-                    >
-                      {statusByRoom[room.roomId] || room.status}
-                      <IoIosArrowDown className="ml-1" />
-                    </Button>
-                  </DropdownTrigger>
-                  <DropdownMenu
-                    aria-label="Cambiar estado de la habitación"
-                    onAction={(newStatus) => handleStatusChange(room.roomId, newStatus as string)}
-                  >
-                    <DropdownItem color="success" description="La habitación está visible para los usuarios." startContent={<IoMdCheckmark className={iconClasses} />}  key="Publicada">Publicada</DropdownItem>
-                    <DropdownItem color="warning" showDivider description="La habitación está temporalmente pausada." startContent={<IoMdPause className={iconClasses} />}  key="Pausada">Pausada</DropdownItem>
-                    <DropdownItem color="danger"  description="La habitación está ocupada." startContent={<IoMdClose className={iconClasses} />} key="Ocupada">Ocupada</DropdownItem>
-                  </DropdownMenu>
-                </Dropdown>
-              </TableCell>
+                  <TableCell>
+                    <Dropdown backdrop="opaque">
+                      <DropdownTrigger>
+                        <Button
+                          color={
+                            statusColorMap[statusByRoom[room.roomId]] ||
+                            "default"
+                          }
+                          variant="flat"
+                          className="w-32"
+                        >
+                          {statusByRoom[room.roomId] || room.status}
+                          <IoIosArrowDown className="ml-1" />
+                        </Button>
+                      </DropdownTrigger>
+                      <DropdownMenu
+                        aria-label="Cambiar estado de la habitación"
+                        onAction={(newStatus) =>
+                          handleStatusChange(room.roomId, newStatus as string)
+                        }
+                      >
+                        <DropdownItem
+                          color="success"
+                          description="La habitación está visible para los usuarios."
+                          startContent={
+                            <IoMdCheckmark className={iconClasses} />
+                          }
+                          key="Publicada"
+                        >
+                          Publicada
+                        </DropdownItem>
+                        <DropdownItem
+                          color="warning"
+                          showDivider
+                          description="La habitación está temporalmente pausada."
+                          startContent={
+                            <IoMdPause className={iconClasses} />
+                          }
+                          key="Pausada"
+                        >
+                          Pausada
+                        </DropdownItem>
+                        <DropdownItem
+                          color="danger"
+                          description="La habitación está ocupada."
+                          startContent={<IoMdClose className={iconClasses} />}
+                          key="Ocupada"
+                        >
+                          Ocupada
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </Dropdown>
+                  </TableCell>
 
-              <TableCell>
-                <Chip color="warning" variant="flat">
-                  Solicitudes: {pendingCounts[room.roomId] || 0}
-                </Chip>
-                <Chip color="success" variant="flat" className="ml-2">
-                  Chats: {approvedCounts[room.roomId] || 0}
-                </Chip>
-              </TableCell>
+                  <TableCell>
+                    <Chip color="warning" variant="flat">
+                      Solicitudes: {pendingCounts[room.roomId] || 0}
+                    </Chip>
+                    <Chip color="success" variant="flat" className="ml-2">
+                      Chats: {approvedCounts[room.roomId] || 0}
+                    </Chip>
+                  </TableCell>
 
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Tooltip content="Editar habitación" color="primary">
-                  <Link href={`/rooms/edit-room?roomId=${room.roomId}`}>
-                   <span className="cursor-pointer text-2xl text-primary active:opacity-50">
-                  <FaEdit />
-                 </span>
-                  </Link>
-                  </Tooltip>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Tooltip content="Editar habitación" color="primary">
+                        <Link href={`/rooms/edit-room?roomId=${room.roomId}`}>
+                          <span className="cursor-pointer text-2xl text-primary active:opacity-50">
+                            <FaEdit />
+                          </span>
+                        </Link>
+                      </Tooltip>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-      <div className="py-4 flex justify-between items-center">
-        <span className="text-small text-default-400">Total {totalRooms} habitaciones</span>
-        <Pagination
-          page={page}
-          total={Math.ceil(totalRooms / pageSize)}
-          onChange={setPage}
-          showControls
-        />
-      </div>
+          <div className="py-4 flex justify-between items-center">
+            <span className="text-small text-default-400">
+              Total {totalRooms} habitaciones
+            </span>
+            <Pagination
+              page={page}
+              total={Math.ceil(totalRooms / pageSize)}
+              onChange={setPage}
+              showControls
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 };

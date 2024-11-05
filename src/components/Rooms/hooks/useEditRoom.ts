@@ -62,14 +62,10 @@ const useEditRoom = () => {
           },
         }),
       });
-
-      console.log("data:",response);
   
       if (!response.ok) throw new Error("Error al editar la habitación.");
   
       const apiResponse = await response.json();
-
-      console.log("respuesta de la appi:",apiResponse.tipoError);
       
       if (apiResponse && apiResponse.tipoError === 1) {
         return apiResponse.tipoError; 

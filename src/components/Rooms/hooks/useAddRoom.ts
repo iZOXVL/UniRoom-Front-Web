@@ -65,7 +65,6 @@ const useAddRoom = () => {
   
       const room = await response.json();
 
-      console.log("respuesta de la appi:",room);
       
       if (room && room.roomId) {
         return room.roomId; 
