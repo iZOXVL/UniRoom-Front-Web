@@ -17,8 +17,14 @@ import {
   Pagination,
   Chip,
   Tooltip,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
 } from "@nextui-org/react";
-import Image from "next/image";
+import {Image} from "@nextui-org/react";
 import { FaEdit, FaPlus, FaSearch } from "react-icons/fa";
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -62,6 +68,10 @@ const TableRooms = () => {
     [key: string]: number;
   }>({});
 
+  // Estados para el modal utilizando useDisclosure
+  const { isOpen, onOpen, onOpenChange } = useDisclosure();
+  const [selectedImage, setSelectedImage] = useState("");
+
   const { habitaciones, totalRooms, loading, error } = useGetRooms(
     page,
     pageSize
@@ -69,6 +79,7 @@ const TableRooms = () => {
   const user = useCurrentUser();
   const toast = useToast();
 
+  // Filtrar habitaciones según el valor de búsqueda
   const filteredItems = useMemo(() => {
     if (!filterValue) return habitaciones || [];
     return (habitaciones || []).filter((room) =>
@@ -76,6 +87,7 @@ const TableRooms = () => {
     );
   }, [filterValue, habitaciones]);
 
+  // Manejar cambio de estado de la habitación
   const handleStatusChange = async (roomId: string, newStatus: string) => {
     if (!user?.JwtToken) return;
 
@@ -122,6 +134,7 @@ const TableRooms = () => {
     }
   };
 
+  // Obtener conteos de solicitudes y chats aprobados
   useEffect(() => {
     const fetchChats = async () => {
       if (!user?.JwtToken) return;
@@ -154,6 +167,7 @@ const TableRooms = () => {
     fetchChats();
   }, [user?.JwtToken]);
 
+  // Establecer el estado inicial de las habitaciones
   useEffect(() => {
     const initialStatus = (habitaciones || []).reduce((acc, room) => {
       acc[room.roomId] = room.status;
@@ -189,7 +203,7 @@ const TableRooms = () => {
             selectionMode="single"
             selectedKeys={new Set([String(pageSize)])}
             onSelectionChange={(key) =>
-              setPageSize(Number(Array.from(key).join()))
+              setPageSize(Number(Array.from(key).join("")))
             }
           >
             <DropdownItem key="5">5</DropdownItem>
@@ -228,14 +242,25 @@ const TableRooms = () => {
               {filteredItems.map((room) => (
                 <TableRow key={room.roomId}>
                   <TableCell>
-                    <Image
-                      src={room.multimedia || "/images/notImage.png"}
-                      alt={room.title}
-                      width={88}
-                      height={88}
-                      className="rounded-md"
-                      objectFit="cover"
-                    />
+                    <div
+                      onClick={() => {
+                        setSelectedImage(
+                          room.multimedia || "/images/notImage.png"
+                        );
+                        onOpen();
+                      }}
+                      className="cursor-pointer"
+                    >
+                      <Image
+                      isZoomed
+                        src={room.multimedia || "/images/notImage.png"}
+                        alt={room.title}
+                        width={108}
+                        height={68}
+                        className="rounded-md"
+                       
+                      />
+                    </div>
                   </TableCell>
 
                   <TableCell>
@@ -287,9 +312,7 @@ const TableRooms = () => {
                           color="warning"
                           showDivider
                           description="La habitación está temporalmente pausada."
-                          startContent={
-                            <IoMdPause className={iconClasses} />
-                          }
+                          startContent={<IoMdPause className={iconClasses} />}
                           key="Pausada"
                         >
                           Pausada
@@ -318,7 +341,9 @@ const TableRooms = () => {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Tooltip content="Editar habitación" color="primary">
-                        <Link href={`/rooms/edit-room?roomId=${room.roomId}`}>
+                        <Link
+                          href={`/rooms/edit-room?roomId=${room.roomId}`}
+                        >
                           <span className="cursor-pointer text-2xl text-primary active:opacity-50">
                             <FaEdit />
                           </span>
@@ -344,6 +369,31 @@ const TableRooms = () => {
           </div>
         </>
       )}
+
+      {/* Modal para mostrar la imagen ampliada */}
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="opaque">
+        <ModalContent>
+          {(onClose) => (
+            <>
+            <ModalHeader>Imagen de la habitación</ModalHeader>  
+              <ModalBody>
+                <Image
+                  src={selectedImage}
+                  alt="Imagen de la habitación"
+                  width={400}
+                  height={450}
+                  className="object-contain rounded-2xl"
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button color="success" variant="light" onPress={onClose}>
+                  Aceptar
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 };
