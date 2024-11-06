@@ -5,7 +5,9 @@ import { useForm } from "react-hook-form";
 import { useState, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-
+import { FaEye } from "react-icons/fa";
+import { FaEyeSlash } from "react-icons/fa";
+import { Input as NextUIInput } from "@nextui-org/react";
 import { NewPasswordSchema } from "@/schemas";
 import { Input } from "@/components/ui/input";
 import {
@@ -14,14 +16,14 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,  
+  FormMessage,
 } from "@/components/ui/form";
 import { CardWrapper } from "@/components/Auth/card-wrapper"
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { newPassword } from "@/actions/new-password";
-import {motion} from "framer-motion";
+import { motion } from "framer-motion";
 
 export const NewPasswordForm = () => {
   const searchParams = useSearchParams();
@@ -30,6 +32,7 @@ export const NewPasswordForm = () => {
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isPending, startTransition] = useTransition();
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const form = useForm<z.infer<typeof NewPasswordSchema>>({
     resolver: zodResolver(NewPasswordSchema),
@@ -62,7 +65,7 @@ export const NewPasswordForm = () => {
       }
     }
   };
-  
+
   const item = {
     hidden: { y: 20, opacity: 0 },
     visible: {
@@ -79,44 +82,78 @@ export const NewPasswordForm = () => {
       backButtonHref="/"
     >
       <Form {...form}>
-        <form 
+        <form
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-6"
         >
           <div className="space-y-4">
+
+
             <FormField
               control={form.control}
               name="password"
               render={({ field }) => (
+
                 <FormItem>
                   <motion.div variants={item}>
-                  <FormLabel>Nueva contraseña</FormLabel>
-                  </motion.div>
-                  <motion.div variants={item}>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      disabled={isPending}
-                      placeholder="******"
-                      type="password"
-                    />
-                  </FormControl>
+                    <FormControl>
+                      <div className="relative w-full">
+                        <NextUIInput
+                          {...field}
+                          disabled={isPending}
+                          className={`max-w-full ${form.formState.errors.password ? 'border-red-500' : 'flex w-100 flex-wrap md:flex-nowrap gap-1.5'}`}
+                          label="Contraseña"
+                          type={isPasswordVisible ? "text" : "password"}
+                          isInvalid={!!form.formState.errors.password}
+                          endContent={
+                            <button
+                              className="focus:outline-none"
+                              type="button"
+                              onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                              aria-label="toggle password visibility"
+                            >
+                              {isPasswordVisible ? (
+                                <FaEyeSlash className="text-2xl text-default-400 pointer-events-none" />
+                              ) : (
+                                <FaEye className="text-2xl text-default-400 pointer-events-none" />
+                              )}
+                            </button>
+                          }
+                        />
+                      </div>
+                    </FormControl>
                   </motion.div>
                   <FormMessage />
                 </FormItem>
+                // <FormItem>
+                //   <motion.div variants={item}>
+                //   <FormLabel>Nueva contraseña</FormLabel>
+                //   </motion.div>
+                //   <motion.div variants={item}>
+                //   <FormControl>
+                //     <Input
+                //       {...field}
+                //       disabled={isPending}
+                //       placeholder="******"
+                //       type="password"
+                //     />
+                //   </FormControl>
+                //   </motion.div>
+                //   <FormMessage />
+                // </FormItem>
               )}
             />
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
           <motion.div variants={item}>
-          <Button
-            disabled={isPending}
-            type="submit"
-            className="w-full bg-primary"
-          >
-            Cambiar contraseña
-          </Button>
+            <Button
+              disabled={isPending}
+              type="submit"
+              className="w-full bg-primary"
+            >
+              Cambiar contraseña
+            </Button>
           </motion.div>
         </form>
       </Form>

@@ -15,6 +15,9 @@ import { reglas, servicios } from "@/components/Rooms/types/rules-services";
 import useUploadMedia from "@/components/Rooms/hooks/useUploadImages";
 import MediaUploader from "./image-uploader";
 import { useConfettiStore } from "@/hooks/use-confetti-store";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+import guideSteps from "../types/guide-steps";
 
 const AddRoomForm = () => {
   const [titulo, setTitulo] = useState("");
@@ -47,6 +50,23 @@ const AddRoomForm = () => {
     setVideos(newVideos);
   };
 
+  const resetForm = () => {
+    setTitulo("");
+    setPrice("");
+    setDescripcion("");
+    setMaxPeople("");
+    setMinTime("");
+    setMaxTime("");
+    setAllowPets(false);
+    setSharedStatus(false);
+    setLocation({ lat: undefined, lng: undefined, address: undefined });
+    setSelectedServices([]);
+    setSelectedRules([]);
+    setImages([]);
+    setVideos([]);
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -70,7 +90,7 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    }   
+    }
 
     if (price == "0") {
       toast({
@@ -81,7 +101,7 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    }   
+    }
 
     if (maxPeople == "0") {
       toast({
@@ -92,18 +112,8 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    }  
+    }
 
-    if (maxPeople == "0") {
-      toast({
-        title: "Error",
-        description: "El número de habitantes debe ser mayor a cero.",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
-      return null;
-    }  
 
     if (minTime == "0") {
       toast({
@@ -114,7 +124,7 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    } 
+    }
 
     if (maxTime == "0") {
       toast({
@@ -125,7 +135,7 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    } 
+    }
 
     if (!descripcion) {
       toast({
@@ -136,7 +146,18 @@ const AddRoomForm = () => {
         isClosable: true,
       });
       return null;
-    } 
+    }
+
+    if (descripcion.length > 250) {
+      toast({
+        title: "Error",
+        description: "La descripción no debe exceder los 250 caracteres.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return null;
+    }
 
     if (!location.lat || !location.lng || !location.address) {
       toast({
@@ -168,10 +189,10 @@ const AddRoomForm = () => {
     const roomPromise = new Promise(async (resolve, reject) => {
       try {
         const roomId = await addRoom(roomData);
-        console.log("Esta es la room:",roomId);
         if (roomId) {
           await uploadMedia(roomId, images, videos);
           confetti.onOpen();
+          resetForm();
           resolve(roomId);
         } else {
           reject(new Error("Error al crear la habitación."));
@@ -211,15 +232,29 @@ const AddRoomForm = () => {
     );
   };
 
+  const startGuide = () => {
+    const driverObj = driver({
+      showProgress: true,
+      steps: guideSteps as any, // Ajuste rápido si necesitas omitir el tipado estricto
+    });
+
+    driverObj.drive();
+  };
+
   return (
     <>
-      <Breadcrumb pageName="Publicar habitación"/>
+      <Breadcrumb pageName="Publicar habitación" />
       <div className="flex flex-col gap-9">
         <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
-          <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3">
-            <h3 className="font-semibold text-dark dark:text-white">
-              Ingresa la información de la habitación
-            </h3>
+          <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3 flex justify-between items-center">
+            <h3 className="font-semibold text-dark dark:text-white">Ingresa la información de la habitación</h3>
+            {/* Botón para iniciar guía de Driver.js */}
+            <button
+              onClick={startGuide}
+              className="bg-primary text-white rounded-md px-4 py-2 hover:bg-opacity-90"
+            >
+              ¿Cómo llenar este formulario?
+            </button>
           </div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-5.5 p-6.5">
 
@@ -232,6 +267,7 @@ const AddRoomForm = () => {
     `}
                 >
                   <input
+                    id="step-shared-status"
                     type="checkbox"
                     checked={sharedStatus}
                     onChange={(e) => setSharedStatus(e.target.checked)}
@@ -256,6 +292,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
     `}
                 >
                   <input
+                    id="step-allow-pets"
                     type="checkbox"
                     checked={allowPets}
                     onChange={(e) => setAllowPets(e.target.checked)}
@@ -270,10 +307,10 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   )}
                 </label>
               </div>
-        </div>
+            </div>
 
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-              <div className="w-full xl:w-4/6">
+              <div id="input-titulo" className="w-full xl:w-4/6">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
                   <MdTitle className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
                   Título
@@ -287,7 +324,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                 />
               </div>
 
-              <div className="w-full xl:w-1/6">
+              <div id="input-precio" className="w-full xl:w-1/6">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
                   <FaDollarSign className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
                   Precio
@@ -303,7 +340,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                 </div>
               </div>
 
-              <div className="w-full xl:w-1/6">
+              <div id="input-max-people" className="w-full xl:w-1/6">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
                   <MdGroupAdd className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
                   Habitantes max
@@ -319,7 +356,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
 
 
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-              <div className="w-full xl:w-1/2">
+              <div id="input-min-time" className="w-full xl:w-1/2">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
                   <FaCheck className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
                   Tiempo de renta mínimo requerido
@@ -335,7 +372,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                 </div>
               </div>
 
-              <div className="w-full xl:w-1/2">
+              <div id="input-max-time" className="w-full xl:w-1/2">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
                   <RxCross2 className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
                   Tiempo de renta máximo requerido
@@ -355,7 +392,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
 
 
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-              <div className="w-full xl:w-1/2 ">
+              <div id="input-descripcion" className="w-full xl:w-1/2 ">
                 <label className="mb-3 text-body-m font-semibold text-dark dark:text-white flex items-center">
                   <MdOutlineSubtitles className="mr-1 text-primary" />
                   Descripción
@@ -365,10 +402,14 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   rows={8}
+                  maxLength={250} 
                   className="w-full h-[288px] rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white resize-none dark:active:border-primary"
                 />
+                <div className="text-right text-gray-500">
+                  {descripcion.length}/250 caracteres
+                </div>
               </div>
-              <div className="w-full xl:w-1/2">
+              <div id="map-ubicacion" className="w-full xl:w-1/2">
                 <label className="mb-3 text-body-m font-semibold text-dark dark:text-white flex items-center ">
                   <IoLocationSharp className="mr-1 text-primary" />
                   Ubicación de la habitación
@@ -379,7 +420,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
               </div>
             </div>
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-              <div className="w-full xl:w-full">
+              <div id="services-list" className="w-full xl:w-full">
                 {/* Servicios brindados */}
                 <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
                   Servicios brindados
@@ -393,7 +434,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                         type="button"
                         onClick={() => handleServiceClick(servicio.id)}
                         className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${isSelected ? 'border-primary bg-gray-200 dark:border-primary dark:bg-dark' : 'border-gray-300 dark:bg-dark-2 dark:border-dark-3'}`}
-                      
+
                       >
                         <DotLottiePlayer src={servicio.animation} autoplay hover style={{ width: '40px', height: '40px' }} />
                         <span className="text-sm font-medium">{servicio.label}</span>
@@ -405,7 +446,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
 
             </div>
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-              <div className="w-full xl:w-full">
+              <div id="rules-list" className="w-full xl:w-full">
                 {/* Reglas */}
                 <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
                   Reglas
@@ -429,7 +470,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
               </div>
             </div>
 
-            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+            <div id="media-uploader" className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div className="w-full xl:w-full">
                 <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
                   Multimedia
@@ -438,7 +479,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
               </div>
             </div>
 
-            <button type="submit" disabled={isUploadingMedia} className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90">
+            <button id="btn-publicar" type="submit" disabled={isUploadingMedia} className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90">
               {isAddingRoom || isUploadingMedia ? "Subiendo..." : "Publicar habitación"}
             </button>
 

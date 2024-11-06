@@ -1,40 +1,23 @@
-// useGetChats.ts
+// useGetAllRooms.ts
 import { useState, useEffect } from "react";
 import { useToast } from "@chakra-ui/react";
 import { useCurrentUser } from "@/hooks/use-current-user";
 
-interface Chat {
-  id: string;
-  participantDetails: {
-    id: string;
-    name: string;
-    email: string;
-    imageUrl: string | null;
-  }[];
-  roomDetails: {
-    title: string;
-    imageUrl: string;
-    description: string;
-    price: number;
-    location: string;
-  };
+interface Room {
   roomId: string;
-  status: string;
-  createdAt: string;
+  title: string;
 }
 
-const useGetChats = (roomIds?: string[], filterValue?: string) => {
+const useGetAllRoomsChat = () => {
   const user = useCurrentUser();
   const userToken = user?.JwtToken;
-  const userName = user?.name;
-  const userId = user?.id;
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const toast = useToast();
 
   useEffect(() => {
-    const fetchChats = async () => {
+    const fetchRooms = async () => {
       setLoading(true);
 
       try {
@@ -43,24 +26,32 @@ const useGetChats = (roomIds?: string[], filterValue?: string) => {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              status: "approved",
-              roomId: roomIds?.join(","),
-              filterValue,
-            }),
+            body: JSON.stringify({ status: "approved" }),
           }
         );
 
         if (!response.ok) throw new Error("Error al obtener los chats.");
 
         const data = await response.json();
+        console.log("esta es la data de get chats",data);
+        const chats = data.chats;
 
-        setChats(data.chats);
+        const uniqueRoomsMap = new Map();
+        chats.forEach((chat: any) => {
+          const roomId = chat.roomId;
+          const title = chat.roomDetails?.title || "Título no disponible";
+          if (!uniqueRoomsMap.has(roomId)) {
+            uniqueRoomsMap.set(roomId, { roomId, title });
+          }
+        });
+
+        const roomsList = Array.from(uniqueRoomsMap.values());
+        setRooms(roomsList);
       } catch (error: any) {
         setError(error);
         toast({
           title: "Error",
-          description: "Hubo un problema al obtener los chats aprobados.",
+          description: "Hubo un problema al obtener las habitaciones.",
           status: "error",
           duration: 9000,
           isClosable: true,
@@ -70,10 +61,10 @@ const useGetChats = (roomIds?: string[], filterValue?: string) => {
       }
     };
 
-    fetchChats();
-  }, [userToken, toast, roomIds, filterValue]);
+    fetchRooms();
+  }, [userToken, toast]);
 
-  return { chats, loading, error, userToken, userName, userId };
+  return { rooms, loading, error };
 };
 
-export default useGetChats;
+export default useGetAllRoomsChat;

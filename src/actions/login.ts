@@ -27,7 +27,7 @@ export const login = async (values: z.infer<typeof LoginSchema>, callbackUrl?: s
   const validateFields = LoginSchema.safeParse(values); // Validación de campos
 
   if (!validateFields.success) {
-    return { error: "Credenciales inválidas" }; // Retorna error si la validación falla
+    return { error: "¡Credenciales inválidas!" }; // Retorna error si la validación falla
   }
 
   const { email, password, code } = validateFields.data; // Desestructura los datos validados
@@ -35,7 +35,7 @@ export const login = async (values: z.infer<typeof LoginSchema>, callbackUrl?: s
   const existingUser = await getUserByEmail(email); // Busca el usuario por correo
 
   if (!existingUser || !existingUser.email || !existingUser.password) {
-    return { error: "Credenciales inexistentes" }; // Retorna error si el usuario no existe
+    return { error: "¡Credenciales inexistentes!" }; // Retorna error si el usuario no existe
   }
 
   // Verifica el rol del usuario. Si es "ESTUDIANTE", bloquea el acceso

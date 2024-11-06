@@ -1,6 +1,5 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GoogleMap, useLoadScript, Marker, Autocomplete } from '@react-google-maps/api';
-import { border } from '@chakra-ui/react';
 
 const mapContainerStyle = {
   width: '100%',
@@ -13,16 +12,26 @@ const options = {
   zoomControl: true,
 };
 
-export default function Map({ onSelectLocation }) {
+export default function MapEdit({ onSelectLocation, initialLocation }) {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     libraries: ['places'],
   });
 
-  const [marker, setMarker] = useState(null);
-  const [address, setAddress] = useState('');
+  const [marker, setMarker] = useState(initialLocation ? { lat: initialLocation.latitude, lng: initialLocation.longitude } : null);
+  const [address, setAddress] = useState(initialLocation?.address || '');
   const autocompleteRef = useRef(null);
   const mapRef = useRef(null);
+
+  useEffect(() => {
+    // Update marker and map position when initialLocation changes
+    if (initialLocation) {
+      const coords = { lat: initialLocation.latitude, lng: initialLocation.longitude };
+      setMarker(coords);
+      setAddress(initialLocation.address || ''); 
+      mapRef.current?.panTo(coords);
+    }
+  }, [initialLocation]);
 
   const onMapClick = useCallback((event) => {
     const coords = { lat: event.latLng.lat(), lng: event.latLng.lng() };
@@ -75,6 +84,7 @@ export default function Map({ onSelectLocation }) {
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           className="w-full mb-2 rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+          required
         />
       </Autocomplete>
       <GoogleMap
