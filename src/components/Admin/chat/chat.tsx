@@ -140,7 +140,7 @@ const Chat: React.FC = () => {
     <>
       <Breadcrumb pageName="Conversaciones" />
       <div className="h-[calc(93vh-186px)] sm:h-[calc(93vh-174px)]">
-        <div className="h-full rounded-sm border border-stroke bg-white shadow-default dark:border-dark-3 dark:bg-gray-dark xl:flex">
+        <div className="h-full rounded-2xl border border-stroke bg-white shadow-md dark:border-dark-3 dark:bg-gray-dark xl:flex">
           <div className="h-full flex-col xl:flex xl:w-1/4">
             {/* Chat List Header */}
             <div className="sticky border-b border-stroke px-6 py-7.5 dark:border-dark-3 dark:bg-gray-dark">
