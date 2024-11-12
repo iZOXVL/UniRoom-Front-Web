@@ -196,7 +196,7 @@ const Chat: React.FC = () => {
   return (
     <>
       <Breadcrumb pageName="Conversaciones" />
-      <div className="h-[calc(97vh-186px)] sm:h-[calc(97vh-174px)]">
+      <div className="h-[calc(90vh-186px)] sm:h-[calc(97vh-174px)]">
         <div className="h-full rounded-2xl border border-stroke bg-white shadow-md dark:border-dark-3 dark:bg-gray-dark xl:flex overflow-hidden">
           <div
             className={`h-full flex-col xl:flex xl:w-1/4 ${
@@ -378,6 +378,7 @@ const Chat: React.FC = () => {
                   isOpen={isConfirmModalOpen}
                   onOpenChange={onConfirmModalOpenChange}
                   placement="auto"
+                  backdrop="blur"
                 >
                   <ModalContent>
                     {(onClose) => (
@@ -451,6 +452,7 @@ const Chat: React.FC = () => {
                   isOpen={isCancelModalOpen}
                   onOpenChange={onCancelModalOpenChange}
                   placement="auto"
+                  backdrop="blur"
                 >
                   <ModalContent>
                     {(onClose) => (
