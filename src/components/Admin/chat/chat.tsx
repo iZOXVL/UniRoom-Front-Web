@@ -196,15 +196,15 @@ const Chat: React.FC = () => {
   return (
     <>
       <Breadcrumb pageName="Conversaciones" />
-      <div className="h-[calc(93vh-186px)] sm:h-[calc(93vh-174px)]">
-        <div className="h-full rounded-2xl border border-stroke bg-white shadow-md dark:border-dark-3 dark:bg-gray-dark xl:flex">
+      <div className="h-[calc(97vh-186px)] sm:h-[calc(97vh-174px)]">
+        <div className="h-full rounded-2xl border border-stroke bg-white shadow-md dark:border-dark-3 dark:bg-gray-dark xl:flex overflow-hidden">
           <div
             className={`h-full flex-col xl:flex xl:w-1/4 ${
               selectedChatId ? "hidden xl:flex" : "flex"
             }`}
           >
             {/* Chat List Header */}
-            <div className="sticky border-b border-stroke px-4 sm:px-6 py-4 sm:py-7.5 dark:border-dark-3 dark:bg-gray-dark">
+            <div className="sticky border-b border-stroke px-4 sm:px-6 py-7 sm:py-7 dark:border-dark-3 dark:bg-gray-dark">
               <h3 className="text-lg font-medium text-black dark:text-white 2xl:text-xl">
                 Chats activos
                 <span className="rounded-md border-[.5px] ml-4 border-stroke bg-gray-2 px-2 py-0.5 text-base font-medium text-black dark:border-dark-3 dark:bg-gray-dark dark:text-white">
@@ -249,7 +249,7 @@ const Chat: React.FC = () => {
                 {chats.map((chat) => (
                   <div
                     key={chat.id}
-                    className={`flex cursor-pointer items-center rounded px-4 py-2 hover:bg-gray-2 dark:hover:bg-dark ${
+                    className={`flex cursor-pointer items-center rounded px-4 py-4 hover:bg-gray-2 dark:hover:bg-dark ${
                       selectedChatId === chat.id ? "bg-gray-2 dark:bg-dark" : ""
                     }`}
                     onClick={() => handleChatSelect(chat.id)}
@@ -281,14 +281,14 @@ const Chat: React.FC = () => {
 
           {/* Chat Box */}
           <div
-            className={`flex h-full flex-col border-l sm:shadow-none shadow-default border-stroke dark:border-dark-3 dark:bg-gray-dark xl:w-3/4 ${
+            className={`flex h-full flex-col border-l border-stroke dark:border-dark-3 dark:bg-gray-dark xl:w-3/4 ${
               selectedChatId ? "flex" : "hidden xl:flex"
             }`}
           >
             {selectedChatId && selectedChat && (
               <>
                 {/* Chat Header */}
-                <div className="sticky flex items-center justify-between border-b border-stroke px-4 sm:px-6 py-4 dark:border-dark-3 dark:bg-gray-dark">
+                <div className="sticky flex items-center justify-between border-b border-stroke px-4 sm:px-4 py-4 sm:py-4 dark:border-dark-3 dark:bg-gray-dark">
                   <div className="flex items-center">
                     {/* Back button on small screens */}
                     <button
@@ -323,7 +323,7 @@ const Chat: React.FC = () => {
                     <div className="hidden sm:flex space-x-2">
                       <Button
                         color="success"
-                        size="md"
+                        size="sm"
                         onClick={onConfirmModalOpen}
                         variant="flat"
                         startContent={<FaCheckCircle />}
@@ -332,7 +332,7 @@ const Chat: React.FC = () => {
                       </Button>
                       <Button
                         color="danger"
-                        size="md"
+                        size="sm"
                         variant="flat"
                         onClick={onCancelModalOpen}
                         startContent={<FaTimesCircle />}
@@ -345,15 +345,15 @@ const Chat: React.FC = () => {
                       <Dropdown placement="bottom-end">
                         <DropdownTrigger>
                           <Button isIconOnly variant="light" aria-label="Más opciones">
-                            <CiMenuKebab  size={24} />
+                            <CiMenuKebab size={24} />
                           </Button>
                         </DropdownTrigger>
                         <DropdownMenu aria-label="Acciones">
                           <DropdownItem
                             key="confirm"
                             color="success"
+                            description="Confirmar trato"
                             startContent={<FaCheckCircle color="green" />}
-                            className="text-green"
                             onClick={onConfirmModalOpen}
                           >
                             Confirmar trato
@@ -361,8 +361,8 @@ const Chat: React.FC = () => {
                           <DropdownItem
                             key="cancel"
                             color="danger"
+                            description="Cancelar trato"
                             startContent={<FaTimesCircle color="red" />}
-                            className="text-danger"
                             onClick={onCancelModalOpen}
                           >
                             Cancelar trato
@@ -542,20 +542,12 @@ const Chat: React.FC = () => {
                           autoplay
                           speed={0.55}
                           style={{
-                            width: "80vw",
+                            width: "50vw",
                             maxWidth: "500px",
                             height: "auto",
-                            maxHeight: "400px",
+                            maxHeight: "250px",
                           }}
                         ></DotLottiePlayer>
-                        <h1 className="text-3xl font-bold text-black dark:text-slate-200 text-center">
-                          Conversa con tus futuros inquilinos
-                        </h1>
-                        <p className="text-lg text-gray-600 dark:text-gray-300 mt-2 text-center">
-                          Conéctate con estudiantes interesados, responde sus
-                          preguntas y facilita el proceso de renta de tus
-                          habitaciones.
-                        </p>
                       </div>
                     )}
                   </div>
@@ -569,7 +561,7 @@ const Chat: React.FC = () => {
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Escribe tu mensaje..."
-                      className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                      className="w-full rounded-full border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                     />
                     <button
                       className="absolute right-4 top-1/2 -translate-y-1/2"
