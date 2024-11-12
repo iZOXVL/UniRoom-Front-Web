@@ -16,7 +16,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   message,
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} backdrop="blur">
       <ModalHeader>
         <h4>Confirmar Acción</h4>
       </ModalHeader>

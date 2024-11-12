@@ -371,7 +371,7 @@ const TableRooms = () => {
       )}
 
       {/* Modal para mostrar la imagen ampliada */}
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="opaque">
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
         <ModalContent>
           {(onClose) => (
             <>
