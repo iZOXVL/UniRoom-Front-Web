@@ -23,7 +23,6 @@ import { FormError } from "@/components/form-error";
 import { FormSuccess } from "@/components/form-success";
 import { UserRole } from "@prisma/client";
 import React from "react";
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import Image from "next/image";
 
 const Settings = () => {
