@@ -182,7 +182,7 @@ const TableRooms = () => {
   return (
     <div>
       <Breadcrumb pageName="Mis habitaciones" />
-      <div className="flex justify-between gap-3 items-end mb-4">
+      <div className="flex justify-between gap-3 items-end mb-4" >
         <Input
           isClearable
           placeholder="Buscar por título..."
@@ -192,7 +192,7 @@ const TableRooms = () => {
           onValueChange={setFilterValue}
         />
 
-        <Dropdown backdrop="opaque" className="z-[-999]">
+        <Dropdown backdrop="opaque">
           <DropdownTrigger>
             <Button variant="flat">{pageSize} por página</Button>
           </DropdownTrigger>

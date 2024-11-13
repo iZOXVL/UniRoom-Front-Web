@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import useAddRoom from "@/components/Rooms/hooks/useAddRoom";
 import { useToast } from "@chakra-ui/react";
@@ -29,15 +29,68 @@ import {
   ModalBody,
   ModalFooter,
   Button,
+  Select,
+  SelectItem,
 } from "@nextui-org/react";
+
+interface AnimatedButtonProps {
+  animationSrc: string | object;
+  label: string;
+  isSelected: boolean;
+  onClick: () => void;
+}
+
+const AnimatedButton: React.FC<AnimatedButtonProps> = ({
+  animationSrc,
+  label,
+  isSelected,
+  onClick,
+}) => {
+  const playerRef = useRef<any>(null); // Ajusta el tipo según la API de DotLottiePlayer
+
+  const handleMouseEnter = () => {
+    if (playerRef.current) {
+      playerRef.current.play(); // Asegúrate de que 'play' sea un método válido
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (playerRef.current) {
+      playerRef.current.pause(); // Asegúrate de que 'pause' sea un método válido
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 transition-colors duration-200 ${
+        isSelected
+          ? "border-primary bg-gray-200 dark:border-primary dark:bg-dark"
+          : "border-gray-300 dark:bg-dark-2 dark:border-dark-3 hover:border-primary hover:bg-gray-200 dark:hover:border-primary dark:hover:bg-dark"
+      }`}
+    >
+      <DotLottiePlayer
+        ref={playerRef}
+        src={animationSrc as string | Record<string, unknown>}
+        autoplay={false} // Desactiva autoplay
+        loop={true} // Ajusta según tus necesidades
+        style={{ width: "40px", height: "40px" }}
+      />
+      <span className="text-sm font-medium mt-2">{label}</span>
+    </button>
+  );
+};
 
 const AddRoomForm = () => {
   const [titulo, setTitulo] = useState("");
   const [price, setPrice] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [maxPeople, setMaxPeople] = useState("");
-  const [minTime, setMinTime] = useState("");
-  const [maxTime, setMaxTime] = useState("");
+  const [minTime, setMinTime] = useState<number | undefined>(undefined);
+  const [maxTime, setMaxTime] = useState<number | undefined>(undefined);
   const [allowPets, setAllowPets] = useState(false);
   const [sharedStatus, setSharedStatus] = useState(false);
   const [location, setLocation] = useState<{
@@ -72,8 +125,8 @@ const AddRoomForm = () => {
     setPrice("");
     setDescripcion("");
     setMaxPeople("");
-    setMinTime("");
-    setMaxTime("");
+    setMinTime(undefined);
+    setMaxTime(undefined);
     setAllowPets(false);
     setSharedStatus(false);
     setLocation({ lat: undefined, lng: undefined, address: undefined });
@@ -106,7 +159,7 @@ const AddRoomForm = () => {
         duration: 5000,
         isClosable: true,
       });
-      return null;
+      return;
     }
 
     if (price === "0" || !price) {
@@ -117,7 +170,7 @@ const AddRoomForm = () => {
         duration: 5000,
         isClosable: true,
       });
-      return null;
+      return;
     }
 
     if (maxPeople === "0" || !maxPeople) {
@@ -128,10 +181,10 @@ const AddRoomForm = () => {
         duration: 5000,
         isClosable: true,
       });
-      return null;
+      return;
     }
 
-    if (minTime === "0" || !minTime) {
+    if (minTime === undefined || minTime === 0) {
       toast({
         title: "Error",
         description: "El tiempo de renta mínimo debe ser mayor a cero.",
@@ -139,10 +192,10 @@ const AddRoomForm = () => {
         duration: 5000,
         isClosable: true,
       });
-      return null;
+      return;
     }
 
-    if (maxTime === "0" || !maxTime) {
+    if (maxTime === undefined || maxTime === 0) {
       toast({
         title: "Error",
         description: "El tiempo de renta máximo debe ser mayor a cero.",
@@ -150,7 +203,7 @@ const AddRoomForm = () => {
         duration: 5000,
         isClosable: true,
       });
-      return null;
+      return;
     }
 
     if (!descripcion) {
@@ -161,7 +214,7 @@ const AddRoomForm = () => {
         duration: 5000,
         isClosable: true,
       });
-      return null;
+      return;
     }
 
     if (descripcion.length > 250) {
@@ -172,7 +225,7 @@ const AddRoomForm = () => {
         duration: 5000,
         isClosable: true,
       });
-      return null;
+      return;
     }
 
     if (!location.lat || !location.lng || !location.address) {
@@ -195,8 +248,8 @@ const AddRoomForm = () => {
       services: selectedServices,
       rules: selectedRules,
       price: parseFloat(price),
-      minTime: parseInt(minTime, 10),
-      maxTime: parseInt(maxTime, 10),
+      minTime: minTime,
+      maxTime: maxTime,
       maxPeople: parseInt(maxPeople, 10),
       sharedStatus,
       allowPets,
@@ -255,6 +308,12 @@ const AddRoomForm = () => {
 
     driverObj.drive();
   };
+
+  // Generar opciones para los Select de meses (1 a 12)
+  const monthOptions = Array.from({ length: 12 }, (_, i) => ({
+    value: i + 1,
+    label: `${i + 1} mes${i + 1 > 1 ? "es" : ""}`,
+  }));
 
   return (
     <>
@@ -319,10 +378,10 @@ const AddRoomForm = () => {
                       ? "bg-gray-300 border-primary"
                       : " bg-white border-stroke hover:bg-gray-300 hover:border-primary"
                   }
-          dark:bg-dark-2 dark:${
-            allowPets ? "bg-dark-3 border-primary" : "hover:bg-dark-3"
-          }
-        `}
+                  dark:bg-dark-2 dark:${
+                    allowPets ? "bg-dark-3 border-primary" : "hover:bg-dark-3"
+                  }
+                `}
                 >
                   <input
                     id="step-allow-pets"
@@ -356,13 +415,14 @@ const AddRoomForm = () => {
                   placeholder="Ingrese el título de la publicación"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
-                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                 />
               </div>
 
               <div id="input-precio" className="w-full xl:w-1/6">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
-                  <FaDollarSign className="mr-1 text-primary" />
+                  {/* Icono de precio */}
+                  <span className="mr-1 text-primary">$</span>
                   Precio
                 </label>
                 <div className="relative">
@@ -370,8 +430,11 @@ const AddRoomForm = () => {
                     type="number"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent pl-7 pr-14 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                   />
+                  <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    $
+                  </span>
                   <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
                     MXN
                   </span>
@@ -387,7 +450,7 @@ const AddRoomForm = () => {
                   type="number"
                   value={maxPeople}
                   onChange={(e) => setMaxPeople(e.target.value)}
-                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                 />
               </div>
             </div>
@@ -399,17 +462,26 @@ const AddRoomForm = () => {
                   <FaCheck className="mr-1 text-primary" />
                   Tiempo de renta mínimo requerido
                 </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={minTime}
-                    onChange={(e) => setMinTime(e.target.value)}
-                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
-                  />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    meses
-                  </span>
-                </div>
+                <Select
+                  id="step-min-time"
+                  aria-label="Tiempo de renta mínimo"
+                  placeholder="Selecciona meses"
+                  size="lg"
+                  value={minTime !== undefined ? minTime.toString() : ""}
+                  onChange={(e) =>
+                    setMinTime(e.target.value ? parseInt(e.target.value) : undefined)
+                  }
+                  classNames={{
+                    base: "w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary",
+                    trigger: "w-full",
+                  }}
+                >
+                  {monthOptions.map((month) => (
+                    <SelectItem key={month.value} value={month.value.toString()}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </Select>
               </div>
 
               <div id="input-max-time" className="w-full xl:w-1/2">
@@ -417,17 +489,26 @@ const AddRoomForm = () => {
                   <RxCross2 className="mr-1 text-primary" />
                   Tiempo de renta máximo requerido
                 </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={maxTime}
-                    onChange={(e) => setMaxTime(e.target.value)}
-                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
-                  />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    meses
-                  </span>
-                </div>
+                <Select
+                  id="step-max-time"
+                  aria-label="Tiempo de renta máximo"
+                  placeholder="Selecciona meses"
+                  size="lg"
+                  value={maxTime !== undefined ? maxTime.toString() : ""}
+                  onChange={(e) =>
+                    setMaxTime(e.target.value ? parseInt(e.target.value) : undefined)
+                  }
+                  classNames={{
+                    base: "w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary",
+                    trigger: "w-full",
+                  }}
+                >
+                  {monthOptions.map((month) => (
+                    <SelectItem key={month.value} value={month.value.toString()}>
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </Select>
               </div>
             </div>
 
@@ -482,26 +563,13 @@ const AddRoomForm = () => {
                   {servicios.map((servicio) => {
                     const isSelected = selectedServices.includes(servicio.id);
                     return (
-                      <button
+                      <AnimatedButton
                         key={servicio.id}
-                        type="button"
+                        animationSrc={servicio.animation}
+                        label={servicio.label}
+                        isSelected={isSelected}
                         onClick={() => handleServiceClick(servicio.id)}
-                        className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${
-                          isSelected
-                            ? "border-primary bg-gray-200 dark:border-primary dark:bg-dark"
-                            : "border-gray-300 dark:bg-dark-2 dark:border-dark-3"
-                        }`}
-                      >
-                        <DotLottiePlayer
-                          src={servicio.animation}
-                          autoplay
-                          hover
-                          style={{ width: "40px", height: "40px" }}
-                        />
-                        <span className="text-sm font-medium">
-                          {servicio.label}
-                        </span>
-                      </button>
+                      />
                     );
                   })}
                 </div>
@@ -518,26 +586,14 @@ const AddRoomForm = () => {
                   {reglas.map((regla) => {
                     const isSelected = selectedRules.includes(regla.id);
                     return (
-                      <button
+                      <AnimatedButton
                         key={regla.id}
-                        type="button"
+                        animationSrc={regla.animation}
+                        label={regla.label}
+                        
+                        isSelected={isSelected}
                         onClick={() => handleRuleClick(regla.id)}
-                        className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${
-                          isSelected
-                            ? "border-primary bg-gray-200 dark:border-primary dark:bg-dark"
-                            : "border-gray-300 dark:bg-dark-2 dark:border-dark-3"
-                        }`}
-                      >
-                        <DotLottiePlayer
-                          src={regla.animation}
-                          autoplay
-                          hover
-                          style={{ width: "40px", height: "40px" }}
-                        />
-                        <span className="text-sm font-medium">
-                          {regla.label}
-                        </span>
-                      </button>
+                      />
                     );
                   })}
                 </div>
