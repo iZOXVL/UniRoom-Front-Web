@@ -18,16 +18,7 @@ const useUploadMedia = () => {
         method: "POST",
         body: formData,
       });
-
       if (!response.ok) throw new Error("Error al subir multimedia.");
-
-      toast({
-        title: "Éxito!",
-        description: "Las imágenes y videos se subieron correctamente.",
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
     } catch (error) {
       toast({
         title: "Error",
