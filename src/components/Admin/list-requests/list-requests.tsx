@@ -13,6 +13,11 @@ import {
   SelectItem,
   Button,
   Input,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@nextui-org/react";
 import useGetPendingRequests from "@/components/Admin/hooks/useGetPendingRequests";
 import useGetAllRooms from "@/components/Admin/hooks/useGetAllRooms";
@@ -21,8 +26,9 @@ import Loader from "@/components/common/Loader";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { FaCheck, FaSearch } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
-import ApprovalModal from "@/components/ui/approval-modal";
 import axios from "axios";
+import { useToast } from "@chakra-ui/react";
+import ApprovalModal from "@/components/ui/approval-modal";
 
 const truncateText = (text: string, maxLength: number) =>
   text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
@@ -35,6 +41,15 @@ const TableRequests = () => {
   const [chatList, setChatList] = useState(chats);
   const [selectedChat, setSelectedChat] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const toast = useToast();
+
+  // Estado para el modal de confirmación
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
+  const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
+  const [selectedChatEmail, setSelectedChatEmail] = useState<string | null>(null);
+  const [selectedChatTitle, setSelectedChatTitle] = useState<string | null>(null);
+  const [selectedTenantName, setSelectedTenantName] = useState<string | null>(null);
 
   // Estado para la barra de búsqueda
   const [filterValue, setFilterValue] = useState("");
@@ -54,6 +69,11 @@ const TableRequests = () => {
   if (error)
     return (
       <div className="text-center text-red-500">Error: {error.message}</div>
+    );
+
+  if (roomsError)
+    return (
+      <div className="text-center text-red-500">Error: {roomsError.message}</div>
     );
 
   const handleRoomChange = (roomIds: Set<string>) => {
@@ -83,9 +103,23 @@ const TableRequests = () => {
         setChatList(chatList.filter((chat) => chat.id !== chatId));
         setSelectedChat(response.data.chat);
         setIsModalOpen(true);
+        toast({
+          title: "Solicitud Aprobada",
+          description: `La solicitud para la habitación ${title} ha sido aprobada con éxito.`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
       }
     } catch (error) {
       console.error("Error al aprobar la solicitud:", error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al aprobar la solicitud.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
@@ -106,63 +140,88 @@ const TableRequests = () => {
       );
       if (response.data.status === "success") {
         setChatList(chatList.filter((chat) => chat.id !== chatId));
+        toast({
+          title: "Solicitud Rechazada",
+          description: `La solicitud para la habitación ${title} ha sido rechazada.`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
       }
     } catch (error) {
       console.error("Error al rechazar la solicitud:", error);
+      toast({
+        title: "Error",
+        description: "Hubo un problema al rechazar la solicitud.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
     }
   };
 
   const closeModal = () => setIsModalOpen(false);
+
+  const handleConfirmAction = async () => {
+    if (!selectedChatId || !selectedChatEmail || !selectedChatTitle || !actionType) {
+      return;
+    }
+
+    if (actionType === "approve") {
+      await handleApprove(selectedChatId, selectedChatEmail, selectedChatTitle);
+    } else if (actionType === "reject") {
+      await handleReject(selectedChatId, selectedChatEmail, selectedChatTitle);
+    }
+    setIsConfirmModalOpen(false);
+  };
 
   return (
     <div>
       <Breadcrumb pageName="Mis solicitudes" />
 
       {/* Contenedor para los filtros y la barra de búsqueda */}
-       <div className="flex gap-2 items-center mb-4">
-  {/* Barra de búsqueda (más grande) */}
-  <Input
-    isClearable
-    placeholder="Buscar por título..."
-    startContent={<FaSearch />}
-    value={filterValue}
-    onClear={() => setFilterValue("")}
-    size="lg"  // Clase de altura agregada
-    onValueChange={setFilterValue}
-    className="flex-grow h-12"  // Clase de altura agregada
-  />
+      <div className="flex gap-2 items-center mb-4">
+        {/* Barra de búsqueda */}
+        <Input
+          isClearable
+          placeholder="Buscar por título..."
+          startContent={<FaSearch />}
+          value={filterValue}
+          onClear={() => setFilterValue("")}
+          size="lg"
+          onValueChange={setFilterValue}
+          className="flex-grow h-12"
+        />
 
-  {/* Filtro de habitaciones */}
-  <Select
-    label="Filtrar por habitación"
-    placeholder="Selecciona una habitación"
-    selectionMode="multiple"
-    className="w-2/4"  
-    size="sm"// Clase de altura agregada
-    selectedKeys={selectedRoomIds}
-    onSelectionChange={(keys) =>
-      handleRoomChange(new Set(keys as unknown as string[]))
-    }
-  >
-    {rooms.map((room) => (
-      <SelectItem key={room.roomId} value={room.roomId}>
-        {room.title}
-      </SelectItem>
-    ))}
-  </Select>
+        {/* Filtro de habitaciones */}
+        <Select
+          label="Filtrar por habitación"
+          placeholder="Selecciona una habitación"
+          selectionMode="multiple"
+          className="w-2/4"
+          size="sm"
+          selectedKeys={selectedRoomIds}
+          onSelectionChange={(keys) =>
+            handleRoomChange(new Set(keys as unknown as string[]))
+          }
+        >
+          {rooms.map((room) => (
+            <SelectItem key={room.roomId} value={room.roomId}>
+              {room.title}
+            </SelectItem>
+          ))}
+        </Select>
 
-  {/* Botón de filtro */}
-  <Button
-    onClick={handleApplyFilter}
-    className="w-auto"
-    size="lg"  // Clase de altura agregada
-    color="primary"
-  >
-    Aplicar
-  </Button>
-</div>
-
-
+        {/* Botón de filtro */}
+        <Button
+          onClick={handleApplyFilter}
+          className="w-auto"
+          size="lg"
+          color="primary"
+        >
+          Aplicar
+        </Button>
+      </div>
 
       {loading ? (
         <Loader />
@@ -172,6 +231,10 @@ const TableRequests = () => {
             aria-label="Tabla de Solicitudes Pendientes"
             isHeaderSticky
             isStriped
+            classNames={{
+              base: "max-h-[520px] overflow-auto",
+              table: "min-h-[400px]",
+            }}
           >
             <TableHeader>
               <TableColumn>Inquilino</TableColumn>
@@ -227,13 +290,14 @@ const TableRequests = () => {
                       <Tooltip content="Aceptar solicitud" color="success">
                         <span
                           className="cursor-pointer text-2xl text-success active:opacity-50"
-                          onClick={() =>
-                            handleApprove(
-                              chat.id,
-                              chat.participants[1]?.email,
-                              chat.roomDetails?.title
-                            )
-                          }
+                          onClick={() => {
+                            setActionType("approve");
+                            setSelectedChatId(chat.id);
+                            setSelectedChatEmail(chat.participants[1]?.email);
+                            setSelectedChatTitle(chat.roomDetails?.title);
+                            setSelectedTenantName(chat.participants[1]?.name);
+                            setIsConfirmModalOpen(true);
+                          }}
                         >
                           <FaCheck />
                         </span>
@@ -241,13 +305,14 @@ const TableRequests = () => {
                       <Tooltip content="Eliminar solicitud" color="danger">
                         <span
                           className="cursor-pointer text-2xl text-danger active:opacity-50"
-                          onClick={() =>
-                            handleReject(
-                              chat.id,
-                              chat.participants[1]?.email,
-                              chat.roomDetails?.title
-                            )
-                          }
+                          onClick={() => {
+                            setActionType("reject");
+                            setSelectedChatId(chat.id);
+                            setSelectedChatEmail(chat.participants[1]?.email);
+                            setSelectedChatTitle(chat.roomDetails?.title);
+                            setSelectedTenantName(chat.participants[1]?.name);
+                            setIsConfirmModalOpen(true);
+                          }}
                         >
                           <MdCancel />
                         </span>
@@ -264,6 +329,39 @@ const TableRequests = () => {
           No hay solicitudes pendientes.
         </div>
       )}
+
+      {/* Modal de confirmación */}
+      <Modal isOpen={isConfirmModalOpen} onOpenChange={setIsConfirmModalOpen} backdrop="blur">
+        <ModalContent>
+          <ModalHeader>
+            {actionType === "approve"
+              ? "Confirmar aprobación"
+              : "Confirmar rechazo"}
+          </ModalHeader>
+          <ModalBody>
+            <p>
+              ¿Estás seguro de que quieres{" "}
+              {actionType === "approve" ? "aprobar" : "rechazar"} la solicitud de{" "}
+              <strong className="text-primary">{selectedTenantName}</strong> para la habitación{" "}
+              <strong className="text-primary">{selectedChatTitle}</strong>?
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="flat"
+              color="danger"
+              onPress={() => setIsConfirmModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button color="primary" onPress={handleConfirmAction}>
+              {actionType === "approve" ? "Aprobar" : "Rechazar"}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal de aprobación (si decides mantenerlo) */}
       {selectedChat && (
         <ApprovalModal
           isOpen={isModalOpen}

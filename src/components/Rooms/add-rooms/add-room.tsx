@@ -1,15 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import { useState } from "react";
 import useAddRoom from "@/components/Rooms/hooks/useAddRoom";
 import { useToast } from "@chakra-ui/react";
-import Map from '@/components/Rooms/add-rooms/map';
-import { DotLottiePlayer } from '@dotlottie/react-player';
+import Map from "@/components/Rooms/add-rooms/map";
+import { DotLottiePlayer } from "@dotlottie/react-player";
 import { FaDollarSign, FaUserGroup, FaCheck } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
-import { MdOutlineSubtitles, MdGroupAdd, MdTitle, MdOutlinePets } from "react-icons/md";
+import {
+  MdOutlineSubtitles,
+  MdGroupAdd,
+  MdTitle,
+  MdOutlinePets,
+} from "react-icons/md";
 import { IoLocationSharp } from "react-icons/io5";
 import { reglas, servicios } from "@/components/Rooms/types/rules-services";
 import useUploadMedia from "@/components/Rooms/hooks/useUploadImages";
@@ -18,6 +22,14 @@ import { useConfettiStore } from "@/hooks/use-confetti-store";
 import { driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import guideSteps from "../types/guide-steps";
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+} from "@nextui-org/react";
 
 const AddRoomForm = () => {
   const [titulo, setTitulo] = useState("");
@@ -28,10 +40,14 @@ const AddRoomForm = () => {
   const [maxTime, setMaxTime] = useState("");
   const [allowPets, setAllowPets] = useState(false);
   const [sharedStatus, setSharedStatus] = useState(false);
-  const [location, setLocation] = useState<{ lat: number | undefined, lng: number | undefined, address: string | undefined }>({
+  const [location, setLocation] = useState<{
+    lat: number | undefined;
+    lng: number | undefined;
+    address: string | undefined;
+  }>({
     lat: undefined,
     lng: undefined,
-    address: undefined
+    address: undefined,
   });
   const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [selectedRules, setSelectedRules] = useState<number[]>([]);
@@ -41,6 +57,7 @@ const AddRoomForm = () => {
   const { uploadMedia, isLoading: isUploadingMedia } = useUploadMedia();
   const toast = useToast();
   const confetti = useConfettiStore();
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   const handleImagesChange = (newImages: File[]) => {
     setImages(newImages);
@@ -66,10 +83,10 @@ const AddRoomForm = () => {
     setVideos([]);
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validaciones previas
     if (images.length === 0 && videos.length === 0) {
       toast({
         title: "Error",
@@ -92,7 +109,7 @@ const AddRoomForm = () => {
       return null;
     }
 
-    if (price == "0") {
+    if (price === "0" || !price) {
       toast({
         title: "Error",
         description: "El precio debe ser mayor a cero.",
@@ -103,7 +120,7 @@ const AddRoomForm = () => {
       return null;
     }
 
-    if (maxPeople == "0") {
+    if (maxPeople === "0" || !maxPeople) {
       toast({
         title: "Error",
         description: "El número de habitantes debe ser mayor a cero.",
@@ -114,11 +131,10 @@ const AddRoomForm = () => {
       return null;
     }
 
-
-    if (minTime == "0") {
+    if (minTime === "0" || !minTime) {
       toast({
         title: "Error",
-        description: "Los tiempos de renta deben ser mayor a cero.",
+        description: "El tiempo de renta mínimo debe ser mayor a cero.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -126,10 +142,10 @@ const AddRoomForm = () => {
       return null;
     }
 
-    if (maxTime == "0") {
+    if (maxTime === "0" || !maxTime) {
       toast({
         title: "Error",
-        description: "Los tiempos de renta deben ser mayor a cero.",
+        description: "El tiempo de renta máximo debe ser mayor a cero.",
         status: "error",
         duration: 5000,
         isClosable: true,
@@ -191,9 +207,10 @@ const AddRoomForm = () => {
         const roomId = await addRoom(roomData);
         if (roomId) {
           await uploadMedia(roomId, images, videos);
+          resolve(roomId);
+          setIsSuccessModalOpen(true);
           confetti.onOpen();
           resetForm();
-          resolve(roomId);
         } else {
           reject(new Error("Error al crear la habitación."));
         }
@@ -218,8 +235,6 @@ const AddRoomForm = () => {
     });
   };
 
-
-
   const handleServiceClick = (id: number) => {
     setSelectedServices((prev) =>
       prev.includes(id) ? prev.filter((service) => service !== id) : [...prev, id]
@@ -228,14 +243,14 @@ const AddRoomForm = () => {
 
   const handleRuleClick = (id: number) => {
     setSelectedRules((prev) =>
-      prev.includes(id) ? prev.filter((rules) => rules !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((rule) => rule !== id) : [...prev, id]
     );
   };
 
   const startGuide = () => {
     const driverObj = driver({
       showProgress: true,
-      steps: guideSteps as any, // Ajuste rápido si necesitas omitir el tipado estricto
+      steps: guideSteps as any,
     });
 
     driverObj.drive();
@@ -247,7 +262,9 @@ const AddRoomForm = () => {
       <div className="flex flex-col gap-9">
         <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
           <div className="border-b border-stroke px-6.5 py-4 dark:border-dark-3 flex justify-between items-center">
-            <h3 className="font-semibold text-dark dark:text-white">Ingresa la información de la habitación</h3>
+            <h3 className="font-semibold text-dark dark:text-white">
+              Ingresa la información de la habitación
+            </h3>
             {/* Botón para iniciar guía de Driver.js */}
             <button
               onClick={startGuide}
@@ -256,15 +273,24 @@ const AddRoomForm = () => {
               ¿Cómo llenar este formulario?
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5.5 p-6.5">
-
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col gap-5.5 p-6.5"
+          >
+            {/* Sección de opciones */}
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div className="w-full xl:w-1/2 mx-auto">
                 <label
                   className={`rounded-[10px] border-2 relative flex items-center justify-between cursor-pointer p-4 transition-all duration-200 
-      ${sharedStatus ? 'bg-gray-300 border-primary' : 'bg-white border-stroke hover:bg-gray-300 hover:border-primary'}
-      dark:bg-dark-2 dark:hover:bg-dark-3 dark:${sharedStatus ? 'bg-dark-3 border-primary' : ''}
-    `}
+                  ${
+                    sharedStatus
+                      ? "bg-gray-300 border-primary"
+                      : "bg-white border-stroke hover:bg-gray-300 hover:border-primary"
+                  }
+                  dark:bg-dark-2 dark:hover:bg-dark-3 dark:${
+                    sharedStatus ? "bg-dark-3 border-primary" : ""
+                  }
+                `}
                 >
                   <input
                     id="step-shared-status"
@@ -275,7 +301,9 @@ const AddRoomForm = () => {
                   />
                   <div className="flex items-center space-x-2">
                     <FaUserGroup className="text-primary" />
-                    <span className="text-dark dark:text-white font-semibold">Cuarto compartido</span>
+                    <span className="text-dark dark:text-white font-semibold">
+                      Cuarto compartido
+                    </span>
                   </div>
                   {sharedStatus && (
                     <span className="text-primary font-bold">✓</span>
@@ -283,13 +311,18 @@ const AddRoomForm = () => {
                 </label>
               </div>
 
-
               <div className="w-full xl:w-1/2 mx-auto">
                 <label
                   className={`rounded-[10px] border-2 relative flex items-center justify-between cursor-pointer p-4 transition-all duration-200
-${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-gray-300 hover:border-primary'}
-      dark:bg-dark-2 dark:${allowPets ? 'bg-dark-3 border-primary' : 'hover:bg-dark-3'}
-    `}
+                  ${
+                    allowPets
+                      ? "bg-gray-300 border-primary"
+                      : " bg-white border-stroke hover:bg-gray-300 hover:border-primary"
+                  }
+          dark:bg-dark-2 dark:${
+            allowPets ? "bg-dark-3 border-primary" : "hover:bg-dark-3"
+          }
+        `}
                 >
                   <input
                     id="step-allow-pets"
@@ -300,7 +333,9 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   />
                   <div className="flex items-center space-x-2">
                     <MdOutlinePets className="text-primary" />
-                    <span className="text-dark dark:text-white font-semibold">Mascotas permitidas</span>
+                    <span className="text-dark dark:text-white font-semibold">
+                      Mascotas permitidas
+                    </span>
                   </div>
                   {allowPets && (
                     <span className="text-primary font-bold">✓</span>
@@ -309,10 +344,11 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
               </div>
             </div>
 
+            {/* Título, Precio y Habitantes */}
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div id="input-titulo" className="w-full xl:w-4/6">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
-                  <MdTitle className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
+                  <MdTitle className="mr-1 text-primary" />
                   Título
                 </label>
                 <input
@@ -326,7 +362,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
 
               <div id="input-precio" className="w-full xl:w-1/6">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
-                  <FaDollarSign className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
+                  <FaDollarSign className="mr-1 text-primary" />
                   Precio
                 </label>
                 <div className="relative">
@@ -336,13 +372,15 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                     onChange={(e) => setPrice(e.target.value)}
                     className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                   />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">MXN</span>
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    MXN
+                  </span>
                 </div>
               </div>
 
               <div id="input-max-people" className="w-full xl:w-1/6">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
-                  <MdGroupAdd className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
+                  <MdGroupAdd className="mr-1 text-primary" />
                   Habitantes max
                 </label>
                 <input
@@ -354,11 +392,11 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
               </div>
             </div>
 
-
+            {/* Tiempos de renta */}
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div id="input-min-time" className="w-full xl:w-1/2">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
-                  <FaCheck className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
+                  <FaCheck className="mr-1 text-primary" />
                   Tiempo de renta mínimo requerido
                 </label>
                 <div className="relative">
@@ -368,13 +406,15 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                     onChange={(e) => setMinTime(e.target.value)}
                     className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                   />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">meses</span>
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    meses
+                  </span>
                 </div>
               </div>
 
               <div id="input-max-time" className="w-full xl:w-1/2">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
-                  <RxCross2 className="mr-1 text-primary" /> {/* Añadimos margen derecho para separar el ícono del texto */}
+                  <RxCross2 className="mr-1 text-primary" />
                   Tiempo de renta máximo requerido
                 </label>
                 <div className="relative">
@@ -384,13 +424,14 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                     onChange={(e) => setMaxTime(e.target.value)}
                     className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                   />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">meses</span>
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    meses
+                  </span>
                 </div>
               </div>
-
             </div>
 
-
+            {/* Descripción y mapa */}
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div id="input-descripcion" className="w-full xl:w-1/2 ">
                 <label className="mb-3 text-body-m font-semibold text-dark dark:text-white flex items-center">
@@ -402,7 +443,7 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   value={descripcion}
                   onChange={(e) => setDescripcion(e.target.value)}
                   rows={8}
-                  maxLength={250} 
+                  maxLength={250}
                   className="w-full h-[288px] rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white resize-none dark:active:border-primary"
                 />
                 <div className="text-right text-gray-500">
@@ -415,13 +456,25 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                   Ubicación de la habitación
                 </label>
                 <Map
-                  onSelectLocation={(location: { coords: { lat: number; lng: number }; address: string }) => setLocation({ lat: location.coords.lat, lng: location.coords.lng, address: location.address })}
+                  onSelectLocation={(
+                    location: {
+                      coords: { lat: number; lng: number };
+                      address: string;
+                    }
+                  ) =>
+                    setLocation({
+                      lat: location.coords.lat,
+                      lng: location.coords.lng,
+                      address: location.address,
+                    })
+                  }
                 />
               </div>
             </div>
+
+            {/* Servicios */}
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div id="services-list" className="w-full xl:w-full">
-                {/* Servicios brindados */}
                 <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
                   Servicios brindados
                 </label>
@@ -433,21 +486,31 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                         key={servicio.id}
                         type="button"
                         onClick={() => handleServiceClick(servicio.id)}
-                        className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${isSelected ? 'border-primary bg-gray-200 dark:border-primary dark:bg-dark' : 'border-gray-300 dark:bg-dark-2 dark:border-dark-3'}`}
-
+                        className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${
+                          isSelected
+                            ? "border-primary bg-gray-200 dark:border-primary dark:bg-dark"
+                            : "border-gray-300 dark:bg-dark-2 dark:border-dark-3"
+                        }`}
                       >
-                        <DotLottiePlayer src={servicio.animation} autoplay hover style={{ width: '40px', height: '40px' }} />
-                        <span className="text-sm font-medium">{servicio.label}</span>
+                        <DotLottiePlayer
+                          src={servicio.animation}
+                          autoplay
+                          hover
+                          style={{ width: "40px", height: "40px" }}
+                        />
+                        <span className="text-sm font-medium">
+                          {servicio.label}
+                        </span>
                       </button>
                     );
                   })}
                 </div>
               </div>
-
             </div>
+
+            {/* Reglas */}
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div id="rules-list" className="w-full xl:w-full">
-                {/* Reglas */}
                 <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
                   Reglas
                 </label>
@@ -459,10 +522,21 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
                         key={regla.id}
                         type="button"
                         onClick={() => handleRuleClick(regla.id)}
-                        className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${isSelected ? 'border-primary bg-gray-200 dark:border-primary dark:bg-dark' : 'border-gray-300 dark:bg-dark-2 dark:border-dark-3'}`}
+                        className={`flex flex-col items-center justify-center p-4 border-2 rounded-lg text-center h-32 ${
+                          isSelected
+                            ? "border-primary bg-gray-200 dark:border-primary dark:bg-dark"
+                            : "border-gray-300 dark:bg-dark-2 dark:border-dark-3"
+                        }`}
                       >
-                        <DotLottiePlayer src={regla.animation} autoplay hover style={{ width: '40px', height: '40px' }} />
-                        <span className="text-sm font-medium">{regla.label}</span>
+                        <DotLottiePlayer
+                          src={regla.animation}
+                          autoplay
+                          hover
+                          style={{ width: "40px", height: "40px" }}
+                        />
+                        <span className="text-sm font-medium">
+                          {regla.label}
+                        </span>
                       </button>
                     );
                   })}
@@ -470,22 +544,68 @@ ${allowPets ? 'bg-gray-300 border-primary' : ' bg-white border-stroke hover:bg-g
               </div>
             </div>
 
-            <div id="media-uploader" className="mb-4.5 flex flex-col gap-6 xl:flex-row">
+            {/* Multimedia */}
+            <div
+              id="media-uploader"
+              className="mb-4.5 flex flex-col gap-6 xl:flex-row"
+            >
               <div className="w-full xl:w-full">
                 <label className="mb-3 block text-body-m font-semibold text-dark dark:text-white">
                   Multimedia
                 </label>
-                <MediaUploader onImagesChange={handleImagesChange} onVideosChange={handleVideosChange} />
+                <MediaUploader
+                  onImagesChange={handleImagesChange}
+                  onVideosChange={handleVideosChange}
+                />
               </div>
             </div>
 
-            <button id="btn-publicar" type="submit" disabled={isUploadingMedia} className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90">
-              {isAddingRoom || isUploadingMedia ? "Subiendo..." : "Publicar habitación"}
+            {/* Botón de publicar */}
+            <button
+              id="btn-publicar"
+              type="submit"
+              disabled={isUploadingMedia}
+              className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90"
+            >
+              {isAddingRoom || isUploadingMedia
+                ? "Subiendo..."
+                : "Publicar habitación"}
             </button>
-
           </form>
         </div>
       </div>
+
+      {/* Modal de éxito */}
+      <Modal
+        isOpen={isSuccessModalOpen}
+        onOpenChange={setIsSuccessModalOpen}
+        backdrop="blur"
+      >
+        <ModalContent>
+          <ModalHeader>Habitación publicada</ModalHeader>
+          <ModalBody>
+            <p>La habitación se ha publicado exitosamente.</p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="primary"
+              onPress={() => {
+                setIsSuccessModalOpen(false);
+              }}
+            >
+              Subir otra habitación
+            </Button>
+            <Button
+              color="success"
+              onPress={() => {
+                window.location.replace("/rooms/list-room");
+              }}
+            >
+              Ir a mis habitaciones
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 };
