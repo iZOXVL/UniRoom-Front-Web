@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import useAddRoom from "@/components/Rooms/hooks/useAddRoom";
 import { useToast } from "@chakra-ui/react";
 import Map from "@/components/Rooms/add-rooms/map";
 import { DotLottiePlayer } from "@dotlottie/react-player";
-import { FaDollarSign, FaUserGroup, FaCheck } from "react-icons/fa6";
+import { FaUserGroup, FaCheck } from "react-icons/fa6";
 import { RxCross2 } from "react-icons/rx";
 import {
   MdOutlineSubtitles,
@@ -29,9 +29,10 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-  Select,
-  SelectItem,
 } from "@nextui-org/react";
+
+// Importa el MultiStepLoader
+import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 
 interface AnimatedButtonProps {
   animationSrc: string | object;
@@ -46,17 +47,17 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
   isSelected,
   onClick,
 }) => {
-  const playerRef = useRef<any>(null); // Ajusta el tipo según la API de DotLottiePlayer
+  const playerRef = useRef<any>(null);
 
   const handleMouseEnter = () => {
     if (playerRef.current) {
-      playerRef.current.play(); // Asegúrate de que 'play' sea un método válido
+      playerRef.current.play();
     }
   };
 
   const handleMouseLeave = () => {
     if (playerRef.current) {
-      playerRef.current.pause(); // Asegúrate de que 'pause' sea un método válido
+      playerRef.current.pause();
     }
   };
 
@@ -75,8 +76,8 @@ const AnimatedButton: React.FC<AnimatedButtonProps> = ({
       <DotLottiePlayer
         ref={playerRef}
         src={animationSrc as string | Record<string, unknown>}
-        autoplay={false} // Desactiva autoplay
-        loop={true} // Ajusta según tus necesidades
+        autoplay={false}
+        loop={true}
         style={{ width: "40px", height: "40px" }}
       />
       <span className="text-sm font-medium mt-2">{label}</span>
@@ -89,8 +90,8 @@ const AddRoomForm = () => {
   const [price, setPrice] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [maxPeople, setMaxPeople] = useState("");
-  const [minTime, setMinTime] = useState<number | undefined>(undefined);
-  const [maxTime, setMaxTime] = useState<number | undefined>(undefined);
+  const [minTime, setMinTime] = useState("");
+  const [maxTime, setMaxTime] = useState("");
   const [allowPets, setAllowPets] = useState(false);
   const [sharedStatus, setSharedStatus] = useState(false);
   const [location, setLocation] = useState<{
@@ -104,13 +105,25 @@ const AddRoomForm = () => {
   });
   const [selectedServices, setSelectedServices] = useState<number[]>([]);
   const [selectedRules, setSelectedRules] = useState<number[]>([]);
-  const { addRoom, isLoading: isAddingRoom } = useAddRoom();
+  const { addRoom } = useAddRoom();
   const [images, setImages] = useState<File[]>([]);
   const [videos, setVideos] = useState<File[]>([]);
-  const { uploadMedia, isLoading: isUploadingMedia } = useUploadMedia();
+  const { uploadMedia } = useUploadMedia();
   const toast = useToast();
   const confetti = useConfettiStore();
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
+  // Estado de carga para el MultiStepLoader
+  const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+
+  // Define los pasos del loader
+  const loadingStates = [
+    { text: "Validando datos" },
+    { text: "Publicando habitación" },
+    { text: "Subiendo multimedia" },
+    { text: "Finalizando" },
+  ];
 
   const handleImagesChange = (newImages: File[]) => {
     setImages(newImages);
@@ -125,8 +138,8 @@ const AddRoomForm = () => {
     setPrice("");
     setDescripcion("");
     setMaxPeople("");
-    setMinTime(undefined);
-    setMaxTime(undefined);
+    setMinTime("");
+    setMaxTime("");
     setAllowPets(false);
     setSharedStatus(false);
     setLocation({ lat: undefined, lng: undefined, address: undefined });
@@ -184,7 +197,7 @@ const AddRoomForm = () => {
       return;
     }
 
-    if (minTime === undefined || minTime === 0) {
+    if (minTime === "0" || !minTime) {
       toast({
         title: "Error",
         description: "El tiempo de renta mínimo debe ser mayor a cero.",
@@ -195,7 +208,7 @@ const AddRoomForm = () => {
       return;
     }
 
-    if (maxTime === undefined || maxTime === 0) {
+    if (maxTime === "0" || !maxTime) {
       toast({
         title: "Error",
         description: "El tiempo de renta máximo debe ser mayor a cero.",
@@ -248,44 +261,67 @@ const AddRoomForm = () => {
       services: selectedServices,
       rules: selectedRules,
       price: parseFloat(price),
-      minTime: minTime,
-      maxTime: maxTime,
+      minTime: parseInt(minTime, 10),
+      maxTime: parseInt(maxTime, 10),
       maxPeople: parseInt(maxPeople, 10),
       sharedStatus,
       allowPets,
     };
 
-    const roomPromise = new Promise(async (resolve, reject) => {
-      try {
-        const roomId = await addRoom(roomData);
-        if (roomId) {
-          await uploadMedia(roomId, images, videos);
-          resolve(roomId);
-          setIsSuccessModalOpen(true);
-          confetti.onOpen();
-          resetForm();
-        } else {
-          reject(new Error("Error al crear la habitación."));
-        }
-      } catch (error) {
-        reject(error);
-      }
-    });
+    console.log("roomData", roomData);
 
-    toast.promise(roomPromise, {
-      loading: {
-        title: "Publicando habitación...",
-        description: "Por favor espera mientras se publica la habitación.",
-      },
-      success: {
-        title: "Habitación publicada",
+    // Inicia el loader
+    setLoading(true);
+    setCurrentStep(0);
+
+    try {
+      // Paso 1: Validando datos
+      setCurrentStep(0);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Paso 2: Publicando habitación
+      setCurrentStep(1);
+      const roomId = await addRoom(roomData);
+
+      if (!roomId) {
+        throw new Error("Error al crear la habitación.");
+      }
+
+      // Paso 3: Subiendo multimedia
+      setCurrentStep(2);
+      await uploadMedia(roomId, images, videos);
+
+      // Paso 4: Finalizando
+      setCurrentStep(3);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setIsSuccessModalOpen(true);
+      confetti.onOpen();
+      resetForm();
+
+      // Muestra toast de éxito
+      toast({
+        title: "Éxito",
         description: "La habitación se ha publicado exitosamente.",
-      },
-      error: {
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error(error);
+      // Muestra toast de error
+      toast({
         title: "Error",
         description: "Hubo un problema al publicar la habitación.",
-      },
-    });
+        status: "error",
+        duration: 9000,
+        isClosable: true,
+      });
+    } finally {
+      // Finaliza el loader
+      setLoading(false);
+      setCurrentStep(0);
+    }
   };
 
   const handleServiceClick = (id: number) => {
@@ -309,14 +345,17 @@ const AddRoomForm = () => {
     driverObj.drive();
   };
 
-  // Generar opciones para los Select de meses (1 a 12)
-  const monthOptions = Array.from({ length: 12 }, (_, i) => ({
-    value: i + 1,
-    label: `${i + 1} mes${i + 1 > 1 ? "es" : ""}`,
-  }));
-
   return (
     <>
+      {/* Muestra el MultiStepLoader cuando loading es true */}
+      {loading && (
+        <MultiStepLoader
+          loadingStates={loadingStates}
+          loading={loading}
+          currentStep={currentStep}
+        />
+      )}
+
       <Breadcrumb pageName="Publicar habitación" />
       <div className="flex flex-col gap-9">
         <div className="rounded-[10px] border border-stroke bg-white shadow-1 dark:border-dark-3 dark:bg-gray-dark dark:shadow-card">
@@ -332,24 +371,21 @@ const AddRoomForm = () => {
               ¿Cómo llenar este formulario?
             </button>
           </div>
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-5.5 p-6.5"
-          >
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5.5 p-6.5">
             {/* Sección de opciones */}
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
               <div className="w-full xl:w-1/2 mx-auto">
                 <label
                   className={`rounded-[10px] border-2 relative flex items-center justify-between cursor-pointer p-4 transition-all duration-200 
-                  ${
-                    sharedStatus
-                      ? "bg-gray-300 border-primary"
-                      : "bg-white border-stroke hover:bg-gray-300 hover:border-primary"
-                  }
-                  dark:bg-dark-2 dark:hover:bg-dark-3 dark:${
-                    sharedStatus ? "bg-dark-3 border-primary" : ""
-                  }
-                `}
+                          ${
+                            sharedStatus
+                              ? "bg-gray-300 border-primary"
+                              : "bg-white border-stroke hover:bg-gray-300 hover:border-primary"
+                          }
+                          dark:bg-dark-2 dark:hover:bg-dark-3 dark:${
+                            sharedStatus ? "bg-dark-3 border-primary" : ""
+                          }
+                        `}
                 >
                   <input
                     id="step-shared-status"
@@ -364,24 +400,22 @@ const AddRoomForm = () => {
                       Cuarto compartido
                     </span>
                   </div>
-                  {sharedStatus && (
-                    <span className="text-primary font-bold">✓</span>
-                  )}
+                  {sharedStatus && <span className="text-primary font-bold">✓</span>}
                 </label>
               </div>
 
               <div className="w-full xl:w-1/2 mx-auto">
                 <label
                   className={`rounded-[10px] border-2 relative flex items-center justify-between cursor-pointer p-4 transition-all duration-200
-                  ${
-                    allowPets
-                      ? "bg-gray-300 border-primary"
-                      : " bg-white border-stroke hover:bg-gray-300 hover:border-primary"
-                  }
-                  dark:bg-dark-2 dark:${
-                    allowPets ? "bg-dark-3 border-primary" : "hover:bg-dark-3"
-                  }
-                `}
+                          ${
+                            allowPets
+                              ? "bg-gray-300 border-primary"
+                              : " bg-white border-stroke hover:bg-gray-300 hover:border-primary"
+                          }
+                          dark:bg-dark-2 dark:${
+                            allowPets ? "bg-dark-3 border-primary" : "hover:bg-dark-3"
+                          }
+                        `}
                 >
                   <input
                     id="step-allow-pets"
@@ -396,9 +430,7 @@ const AddRoomForm = () => {
                       Mascotas permitidas
                     </span>
                   </div>
-                  {allowPets && (
-                    <span className="text-primary font-bold">✓</span>
-                  )}
+                  {allowPets && <span className="text-primary font-bold">✓</span>}
                 </label>
               </div>
             </div>
@@ -415,13 +447,12 @@ const AddRoomForm = () => {
                   placeholder="Ingrese el título de la publicación"
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
-                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                 />
               </div>
 
               <div id="input-precio" className="w-full xl:w-1/6">
                 <label className="mb-3 font-semibold text-body-m text-dark dark:text-white flex items-center">
-                  {/* Icono de precio */}
                   <span className="mr-1 text-primary">$</span>
                   Precio
                 </label>
@@ -430,7 +461,7 @@ const AddRoomForm = () => {
                     type="number"
                     value={price}
                     onChange={(e) => setPrice(e.target.value)}
-                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent pl-7 pr-14 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 pl-7 pr-14 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                   />
                   <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">
                     $
@@ -450,7 +481,7 @@ const AddRoomForm = () => {
                   type="number"
                   value={maxPeople}
                   onChange={(e) => setMaxPeople(e.target.value)}
-                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                 />
               </div>
             </div>
@@ -462,26 +493,17 @@ const AddRoomForm = () => {
                   <FaCheck className="mr-1 text-primary" />
                   Tiempo de renta mínimo requerido
                 </label>
-                <Select
-                  id="step-min-time"
-                  aria-label="Tiempo de renta mínimo"
-                  placeholder="Selecciona meses"
-                  size="lg"
-                  value={minTime !== undefined ? minTime.toString() : ""}
-                  onChange={(e) =>
-                    setMinTime(e.target.value ? parseInt(e.target.value) : undefined)
-                  }
-                  classNames={{
-                    base: "w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary",
-                    trigger: "w-full",
-                  }}
-                >
-                  {monthOptions.map((month) => (
-                    <SelectItem key={month.value} value={month.value.toString()}>
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </Select>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={minTime}
+                    onChange={(e) => setMinTime(e.target.value)}
+                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  />
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    meses
+                  </span>
+                </div>
               </div>
 
               <div id="input-max-time" className="w-full xl:w-1/2">
@@ -489,26 +511,17 @@ const AddRoomForm = () => {
                   <RxCross2 className="mr-1 text-primary" />
                   Tiempo de renta máximo requerido
                 </label>
-                <Select
-                  id="step-max-time"
-                  aria-label="Tiempo de renta máximo"
-                  placeholder="Selecciona meses"
-                  size="lg"
-                  value={maxTime !== undefined ? maxTime.toString() : ""}
-                  onChange={(e) =>
-                    setMaxTime(e.target.value ? parseInt(e.target.value) : undefined)
-                  }
-                  classNames={{
-                    base: "w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary",
-                    trigger: "w-full",
-                  }}
-                >
-                  {monthOptions.map((month) => (
-                    <SelectItem key={month.value} value={month.value.toString()}>
-                      {month.label}
-                    </SelectItem>
-                  ))}
-                </Select>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={maxTime}
+                    onChange={(e) => setMaxTime(e.target.value)}
+                    className="w-full rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                  />
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    meses
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -525,7 +538,7 @@ const AddRoomForm = () => {
                   onChange={(e) => setDescripcion(e.target.value)}
                   rows={8}
                   maxLength={250}
-                  className="w-full h-[288px] rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white resize-none dark:active:border-primary"
+                  className="w-full h-[288px] rounded-[7px] border-[1.5px] bg-slate-50 border-gray-4 px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white resize-none dark:active:border-primary"
                 />
                 <div className="text-right text-gray-500">
                   {descripcion.length}/250 caracteres
@@ -590,7 +603,6 @@ const AddRoomForm = () => {
                         key={regla.id}
                         animationSrc={regla.animation}
                         label={regla.label}
-                        
                         isSelected={isSelected}
                         onClick={() => handleRuleClick(regla.id)}
                       />
@@ -620,12 +632,10 @@ const AddRoomForm = () => {
             <button
               id="btn-publicar"
               type="submit"
-              disabled={isUploadingMedia}
+              disabled={loading}
               className="mt-5 w-full inline-flex justify-center rounded-md bg-primary px-10 py-4 text-center text-white hover:bg-opacity-90"
             >
-              {isAddingRoom || isUploadingMedia
-                ? "Subiendo..."
-                : "Publicar habitación"}
+              {loading ? "Subiendo..." : "Publicar habitación"}
             </button>
           </form>
         </div>
