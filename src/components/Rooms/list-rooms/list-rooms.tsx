@@ -24,7 +24,7 @@ import {
   ModalFooter,
   useDisclosure,
 } from "@nextui-org/react";
-import {Image} from "@nextui-org/react";
+import { Image } from "@nextui-org/react";
 import { FaEdit, FaPlus, FaSearch } from "react-icons/fa";
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -182,7 +182,7 @@ const TableRooms = () => {
   return (
     <div>
       <Breadcrumb pageName="Mis habitaciones" />
-      <div className="flex justify-between gap-3 items-end mb-4">
+      <div className="flex justify-between gap-3 items-end mb-4" >
         <Input
           isClearable
           placeholder="Buscar por título..."
@@ -230,7 +230,15 @@ const TableRooms = () => {
         </div>
       ) : (
         <>
-          <Table aria-label="Tabla de habitaciones" isHeaderSticky isStriped>
+          <Table
+            aria-label="Tabla de habitaciones"
+            isHeaderSticky
+            isStriped
+            classNames={{
+              base: "max-h-[465px] overflow-auto",
+              table: "min-h-[400px]",
+            }}
+          >
             <TableHeader>
               <TableColumn>Portada</TableColumn>
               <TableColumn>Habitación</TableColumn>
@@ -252,13 +260,12 @@ const TableRooms = () => {
                       className="cursor-pointer"
                     >
                       <Image
-                      isZoomed
+                        isZoomed
                         src={room.multimedia || "/images/notImage.png"}
                         alt={room.title}
                         width={108}
                         height={68}
                         className="rounded-md"
-                       
                       />
                     </div>
                   </TableCell>
@@ -341,9 +348,7 @@ const TableRooms = () => {
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Tooltip content="Editar habitación" color="primary">
-                        <Link
-                          href={`/rooms/edit-room?roomId=${room.roomId}`}
-                        >
+                        <Link href={`/rooms/edit-room?roomId=${room.roomId}`}>
                           <span className="cursor-pointer text-2xl text-primary active:opacity-50">
                             <FaEdit />
                           </span>
@@ -371,11 +376,11 @@ const TableRooms = () => {
       )}
 
       {/* Modal para mostrar la imagen ampliada */}
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="opaque">
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop="blur">
         <ModalContent>
           {(onClose) => (
             <>
-            <ModalHeader>Imagen de la habitación</ModalHeader>  
+              <ModalHeader>Imagen de la habitación</ModalHeader>
               <ModalBody>
                 <Image
                   src={selectedImage}

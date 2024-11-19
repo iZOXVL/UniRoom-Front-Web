@@ -1,3 +1,4 @@
+import { Image } from 'next/image';
 import { JwtToken } from './../node_modules/.prisma/client/index.d';
 import { UserRole } from "@prisma/client";
 import NextAuth, { type DefaultSession } from "next-auth";
@@ -9,7 +10,8 @@ export type ExtendedUser = DefaultSession["user"] & {
   isTwoFactorEnabled: boolean; // Indica si el usuario tiene habilitada la autenticación de dos factores.
   isOAuth: boolean;            // Indica si el usuario está autenticado usando OAuth.
   provider?: string;          // Opcional: define el proveedor de OAuth que se está utilizando (si aplica).
-  JwtToken: JwtToken;         // Añade el campo 'JwtToken' que utiliza el tipo 'JwtToken' de Prisma.
+  JwtToken: JwtToken;    // Añade el campo 'JwtToken' que utiliza el tipo 'JwtToken' de Prisma.
+  Image: string;      // Añade el campo 'Image' que utiliza el tipo 'Image' de Prisma.
 };
 
 // Se amplía el módulo "next-auth" para incluir el tipo 'ExtendedUser'

@@ -30,10 +30,19 @@ const useGetAllRooms = () => {
           }
         );
 
-        if (!response.ok) throw new Error("Error al obtener las solicitudes.");
+        if (!response.ok) {
+          if (response.status === 404) {
+            // No hay solicitudes pendientes
+            setRooms([]);
+            setLoading(false);
+            return;
+          } else {
+            throw new Error("Error al obtener las solicitudes.");
+          }
+        }
 
         const data = await response.json();
-        const chats = data.chats;
+        const chats = data.chats || [];
 
         const uniqueRoomsMap = new Map();
         chats.forEach((chat: any) => {
@@ -48,13 +57,16 @@ const useGetAllRooms = () => {
         setRooms(roomsList);
       } catch (error: any) {
         setError(error);
-        toast({
-          title: "Error",
-          description: "Hubo un problema al obtener las habitaciones.",
-          status: "error",
-          duration: 9000,
-          isClosable: true,
-        });
+        // Solo muestra el toast si el error no es por falta de solicitudes
+        if (error.message !== "No pending requests") {
+          toast({
+            title: "Error",
+            description: "Hubo un problema al obtener las habitaciones.",
+            status: "error",
+            duration: 9000,
+            isClosable: true,
+          });
+        }
       } finally {
         setLoading(false);
       }

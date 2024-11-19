@@ -1,4 +1,3 @@
-// Chat.tsx
 "use client";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -7,22 +6,52 @@ import useGetAllRoomsChat from "@/components/Admin/hooks/useGetAllRoomsChat";
 import Loader from "@/components/common/Loader";
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import { BiSend } from "react-icons/bi";
-import { IoAttach } from "react-icons/io5";
+import {
+  BiSend,
+  BiUser,
+  BiCalendar,
+  BiDollarCircle,
+} from "react-icons/bi";
+import { IoAttach, IoArrowBack } from "react-icons/io5";
 import { SlEmotsmile } from "react-icons/sl";
+import { CiMenuKebab } from "react-icons/ci";
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { DotLottiePlayer } from "@dotlottie/react-player";
 import "@dotlottie/react-player/dist/index.css";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
-import { Button, Select, SelectItem } from "@nextui-org/react";
+import {
+  Button,
+  Select,
+  SelectItem,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Input,
+  DateRangePicker,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Checkbox,
+} from "@nextui-org/react";
+import { useToast } from "@chakra-ui/react";
+import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { RangeValue } from "@react-types/shared";
+import { DateValue } from "@react-types/datepicker";
 
 const Chat: React.FC = () => {
-  const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
+  const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(
+    new Set()
+  );
   const [roomIdsToFilter, setRoomIdsToFilter] = useState<string[]>([]);
 
-  const { rooms, loading: roomsLoading, error: roomsError } = useGetAllRoomsChat();
-  const { chats, loading, error, userToken, userName, userId } = useGetChats(
-    roomIdsToFilter
-  );
+  const { rooms, loading: roomsLoading, error: roomsError } =
+    useGetAllRoomsChat();
+  const { chats, loading, error, userToken, userName, userId } =
+    useGetChats(roomIdsToFilter);
 
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -31,8 +60,36 @@ const Chat: React.FC = () => {
   const [newMessage, setNewMessage] = useState<string>("");
   const [isPickerVisible, setIsPickerVisible] = useState(false);
 
-  const socket = useRef(io("https://uniroom-backend-services.onrender.com")).current;
+  // Estado para el modal de confirmar trato
+  const {
+    isOpen: isConfirmModalOpen,
+    onOpen: onConfirmModalOpen,
+    onOpenChange: onConfirmModalOpenChange,
+  } = useDisclosure();
+
+  // Estado para el modal de cancelar trato
+  const {
+    isOpen: isCancelModalOpen,
+    onOpen: onCancelModalOpen,
+    onOpenChange: onCancelModalOpenChange,
+  } = useDisclosure();
+
+  // Estados para los inputs del modal
+  const [habitants, setHabitants] = useState<number>(1);
+  const [monthlyPrice, setMonthlyPrice] = useState<number>(0);
+  const [depositRequired, setDepositRequired] = useState<boolean>(false);
+  const [depositAmount, setDepositAmount] = useState<number>(0);
+  const [dateRange, setDateRange] = useState<RangeValue<DateValue>>({
+    start: parseDate("2024-04-01"),
+    end: parseDate("2024-04-01"),
+  });
+
+  const socket = useRef(
+    io("https://uniroom-backend-services.onrender.com")
+  ).current;
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const toast = useToast();
 
   const onEmojiClick = (emojiObject: EmojiClickData) => {
     setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
@@ -41,7 +98,10 @@ const Chat: React.FC = () => {
 
   // Reset selectedChatId if it's not in the filtered chats
   useEffect(() => {
-    if (selectedChatId && !chats.find((chat) => chat.id === selectedChatId)) {
+    if (
+      selectedChatId &&
+      !chats.find((chat) => chat.id === selectedChatId)
+    ) {
       setSelectedChatId(null);
       setMessages([]);
     }
@@ -124,6 +184,89 @@ const Chat: React.FC = () => {
     setRoomIdsToFilter(Array.from(selectedRoomIds));
   };
 
+  // Función para manejar la confirmación del trato
+  const handleConfirmDeal = async () => {
+    if (
+      !selectedChat ||
+      !dateRange.start ||
+      !dateRange.end ||
+      monthlyPrice <= 0
+    ) {
+      toast({
+        title: "Error",
+        description: "Por favor, completa todos los campos obligatorios.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Convertir las fechas a objetos Date
+    const startDate = dateRange.start.toDate(getLocalTimeZone());
+    const endDate = dateRange.end.toDate(getLocalTimeZone());
+
+    // Construir el payload para la API
+    const payload = {
+      token: userToken,
+      tenantId: selectedChat.participantDetails[1]?.id || "", // inquilino
+      roomId: selectedChat.roomId || "",
+      habitants: habitants,
+      monthlyPrice: monthlyPrice,
+      deposit: depositRequired ? depositAmount : 0,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    };
+
+    console.log("Payload enviado:", payload);
+
+    try {
+      const response = await fetch(
+        "https://uruniroom.azurewebsites.net/api/Hirings/AddHiring",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Error al confirmar el trato."
+        );
+      }
+
+      // Si la respuesta es exitosa
+      toast({
+        title: "Éxito",
+        description: "El trato ha sido confirmado exitosamente.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      onConfirmModalOpenChange();
+
+      // Resetear los campos del modal
+      setHabitants(1);
+      setMonthlyPrice(0);
+      setDepositRequired(false);
+      setDepositAmount(0);
+      setDateRange({ start: parseDate("2024-04-01"), end: parseDate("2024-04-01") });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Error al confirmar el trato.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
   if (loading || roomsLoading) {
     return <Loader />;
   }
@@ -136,14 +279,21 @@ const Chat: React.FC = () => {
     );
   }
 
+  // Obtener información del chat seleccionado
+  const selectedChat = chats.find((chat) => chat.id === selectedChatId);
+
   return (
     <>
       <Breadcrumb pageName="Conversaciones" />
-      <div className="h-[calc(93vh-186px)] sm:h-[calc(93vh-174px)]">
-        <div className="h-full rounded-2xl border border-stroke bg-white shadow-md dark:border-dark-3 dark:bg-gray-dark xl:flex">
-          <div className="h-full flex-col xl:flex xl:w-1/4">
+      <div className="h-[calc(90vh-186px)] sm:h-[calc(97vh-174px)]">
+        <div className="h-full rounded-2xl border border-stroke bg-white shadow-md dark:border-dark-3 dark:bg-gray-dark xl:flex overflow-hidden">
+          <div
+            className={`h-full flex-col xl:flex xl:w-1/4 ${
+              selectedChatId ? "hidden xl:flex" : "flex"
+            }`}
+          >
             {/* Chat List Header */}
-            <div className="sticky border-b border-stroke px-6 py-7.5 dark:border-dark-3 dark:bg-gray-dark">
+            <div className="sticky border-b border-stroke px-4 sm:px-6 py-7 sm:py-7 dark:border-dark-3 dark:bg-gray-dark">
               <h3 className="text-lg font-medium text-black dark:text-white 2xl:text-xl">
                 Chats activos
                 <span className="rounded-md border-[.5px] ml-4 border-stroke bg-gray-2 px-2 py-0.5 text-base font-medium text-black dark:border-dark-3 dark:bg-gray-dark dark:text-white">
@@ -151,19 +301,21 @@ const Chat: React.FC = () => {
                 </span>
               </h3>
             </div>
-            <div className="flex max-h-full flex-col overflow-auto p-5">
+            <div className="flex max-h-full flex-col overflow-auto p-4 sm:p-5">
               {/* Filters */}
-              <div className="flex gap-2 items-center mb-4">
+              <div className="flex flex-col sm:flex-row gap-2 items-center mb-4">
                 {/* Room Filter */}
                 <Select
                   label="Filtrar por habitación"
                   placeholder="Selecciona una habitación"
                   selectionMode="multiple"
-                  className="w-3/4"
+                  className="w-full sm:w-3/4"
                   size="sm"
                   selectedKeys={selectedRoomIds}
                   onSelectionChange={(keys) =>
-                    handleRoomChange(new Set(keys as unknown as string[]))
+                    handleRoomChange(
+                      new Set(keys as unknown as string[])
+                    )
                   }
                 >
                   {rooms.map((room) => (
@@ -176,7 +328,7 @@ const Chat: React.FC = () => {
                 {/* Apply Filter Button */}
                 <Button
                   onClick={handleApplyFilter}
-                  className="w-auto h-12"
+                  className="w-full sm:w-auto h-12"
                   size="sm"
                   color="primary"
                 >
@@ -188,8 +340,10 @@ const Chat: React.FC = () => {
                 {chats.map((chat) => (
                   <div
                     key={chat.id}
-                    className={`flex cursor-pointer items-center rounded px-4 py-2 hover:bg-gray-2 dark:hover:bg-dark ${
-                      selectedChatId === chat.id ? "bg-gray-2 dark:bg-dark" : ""
+                    className={`flex cursor-pointer items-center rounded px-4 py-4 hover:bg-gray-2 dark:hover:bg-dark ${
+                      selectedChatId === chat.id
+                        ? "bg-gray-2 dark:bg-dark"
+                        : ""
                     }`}
                     onClick={() => handleChatSelect(chat.id)}
                   >
@@ -219,41 +373,265 @@ const Chat: React.FC = () => {
           </div>
 
           {/* Chat Box */}
-          <div className="flex h-full flex-col border-l sm:shadow-none shadow-default border-stroke dark:border-dark-3 dark:bg-gray-dark xl:w-3/4">
-            {selectedChatId && chats.find((chat) => chat.id === selectedChatId) && (
+          <div
+            className={`flex h-full flex-col border-l border-stroke dark:border-dark-3 dark:bg-gray-dark xl:w-3/4 ${
+              selectedChatId ? "flex" : "hidden xl:flex"
+            }`}
+          >
+            {selectedChatId && selectedChat && (
               <>
                 {/* Chat Header */}
-                <div className="sticky flex items-center justify-between border-b border-stroke px-6 py-4.5 dark:border-dark-3 dark:bg-gray-dark">
+                <div className="sticky flex items-center justify-between border-b border-stroke px-4 sm:px-4 py-4 sm:py-4 dark:border-dark-3 dark:bg-gray-dark">
                   <div className="flex items-center">
+                    {/* Back button on small screens */}
+                    <button
+                      className="mr-2 xl:hidden"
+                      onClick={() => setSelectedChatId(null)}
+                    >
+                      <IoArrowBack size={24} />
+                    </button>
+
                     <div className="mr-4.5 h-13 w-full max-w-13 rounded-full">
                       <Image
                         src={
-                          chats.find((chat) => chat.id === selectedChatId)
-                            ?.participantDetails[1]?.imageUrl ||
+                          selectedChat.participantDetails[1]?.imageUrl ||
                           "/images/default-avatar.png"
                         }
                         alt="avatar"
-                        className="h-full w-full object-cover object-center"
+                        className="h-full w-full object-cover object-center rounded-full"
                         width={52}
                         height={52}
                       />
                     </div>
                     <div>
                       <h5 className="font-medium text-black dark:text-white">
-                        {
-                          chats.find((chat) => chat.id === selectedChatId)
-                            ?.participantDetails[1]?.name
-                        }
+                        {selectedChat.participantDetails[1]?.name}
                       </h5>
-                      <p>
-                        {
-                          chats.find((chat) => chat.id === selectedChatId)
-                            ?.roomDetails.title
-                        }
-                      </p>
+                      <p>{selectedChat.roomDetails.title}</p>
+                    </div>
+                  </div>
+                  {/* Botones Confirmar y Cancelar Trato */}
+                  <div className="flex items-center space-x-2">
+                    {/* Mostrar botones en pantallas medianas y grandes */}
+                    <div className="hidden sm:flex space-x-2">
+                      <Button
+                        color="success"
+                        size="sm"
+                        onClick={onConfirmModalOpen}
+                        variant="flat"
+                        startContent={<FaCheckCircle />}
+                      >
+                        Confirmar trato
+                      </Button>
+                      <Button
+                        color="danger"
+                        size="sm"
+                        variant="flat"
+                        onClick={onCancelModalOpen}
+                        startContent={<FaTimesCircle />}
+                      >
+                        Cancelar trato
+                      </Button>
+                    </div>
+                    {/* Mostrar menú en dispositivos móviles */}
+                    <div className="flex sm:hidden">
+                      <Dropdown placement="bottom-end">
+                        <DropdownTrigger>
+                          <Button
+                            isIconOnly
+                            variant="light"
+                            aria-label="Más opciones"
+                          >
+                            <CiMenuKebab size={24} />
+                          </Button>
+                        </DropdownTrigger>
+                        <DropdownMenu aria-label="Acciones">
+                          <DropdownItem
+                            key="confirm"
+                            color="success"
+                            description="Confirmar trato"
+                            startContent={
+                              <FaCheckCircle color="green" />
+                            }
+                            onClick={onConfirmModalOpen}
+                          >
+                            Confirmar trato
+                          </DropdownItem>
+                          <DropdownItem
+                            key="cancel"
+                            color="danger"
+                            description="Cancelar trato"
+                            startContent={
+                              <FaTimesCircle color="red" />
+                            }
+                            onClick={onCancelModalOpen}
+                          >
+                            Cancelar trato
+                          </DropdownItem>
+                        </DropdownMenu>
+                      </Dropdown>
                     </div>
                   </div>
                 </div>
+
+                {/* Modal Confirmar Trato */}
+                <Modal
+                  isOpen={isConfirmModalOpen}
+                  onOpenChange={onConfirmModalOpenChange}
+                  placement="auto"
+                  backdrop="blur"
+                >
+                  <ModalContent>
+                    {(onClose) => (
+                      <>
+                        <ModalHeader className="flex flex-col gap-1">
+                          Confirmar Trato
+                        </ModalHeader>
+                        <ModalBody>
+                          <p>
+                            ¿Estás seguro de que deseas confirmar el trato
+                            para la habitación{" "}
+                            <strong className="text-primary">
+                              {selectedChat.roomDetails.title}
+                            </strong>{" "}
+                            con{" "}
+                            <strong className="text-primary">
+                              {selectedChat.participantDetails[1]?.name}
+                            </strong>
+                            ?
+                          </p>
+                          <div className="mt-4 space-y-4">
+                            <Input
+                              label="Número de habitantes"
+                              type="number"
+                              min="1"
+                              value={habitants.toString()}
+                              onChange={(e) =>
+                                setHabitants(Number(e.target.value))
+                              }
+                              placeholder="Ingrese el número de habitantes"
+                              startContent={<BiUser />}
+                            />
+                            <Input
+                              label="Precio mensual"
+                              type="number"
+                              min="0"
+                              value={monthlyPrice.toString()}
+                              onChange={(e) =>
+                                setMonthlyPrice(
+                                  e.target.value !== ""
+                                    ? Number(e.target.value)
+                                    : 0
+                                )
+                              }
+                              placeholder="Ingrese el precio mensual"
+                              startContent={<BiDollarCircle />}
+                            />
+                            <Checkbox
+                              isSelected={depositRequired}
+                              onChange={(e) => setDepositRequired(e.target.checked)}
+                            >
+                              ¿Requiere depósito?
+                            </Checkbox>
+                            {depositRequired && (
+                              <Input
+                                label="Depósito"
+                                type="number"
+                                min="0"
+                                value={depositAmount.toString()}
+                                onChange={(e) =>
+                                  setDepositAmount(
+                                    e.target.value !== ""
+                                      ? Number(e.target.value)
+                                      : 0
+                                  )
+                                }
+                                placeholder="Ingrese el monto del depósito"
+                                startContent={<BiDollarCircle />}
+                              />
+                            )}
+                            <DateRangePicker
+                              label="Fechas de estancia"
+                              value={dateRange}
+                              onChange={setDateRange}
+                              startContent={<BiCalendar />}
+                              className="w-full cursor-pointer"
+                              visibleMonths={1}
+                            />
+                          </div>
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button
+                            color="danger"
+                            variant="flat"
+                            onPress={onClose}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            color="success"
+                            onPress={() => {
+                              handleConfirmDeal();
+                              // No cerramos el modal aquí, lo haremos después de la respuesta de la API
+                            }}
+                          >
+                            Confirmar
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
+
+                {/* Modal Cancelar Trato */}
+                <Modal
+                  isOpen={isCancelModalOpen}
+                  onOpenChange={onCancelModalOpenChange}
+                  placement="auto"
+                  backdrop="blur"
+                >
+                  <ModalContent>
+                    {(onClose) => (
+                      <>
+                        <ModalHeader className="flex flex-col gap-1">
+                          Cancelar Trato
+                        </ModalHeader>
+                        <ModalBody>
+                          <p>
+                            ¿Estás seguro de que deseas cancelar el trato
+                            con{" "}
+                            <strong className="text-primary">
+                              {selectedChat.participantDetails[1]?.name}
+                            </strong>{" "}
+                            para la habitación{" "}
+                            <strong className="text-primary">
+                              {selectedChat.roomDetails.title}
+                            </strong>
+                            ?
+                          </p>
+                        </ModalBody>
+                        <ModalFooter>
+                          <Button
+                            color="default"
+                            variant="flat"
+                            onPress={onClose}
+                          >
+                            No
+                          </Button>
+                          <Button
+                            color="danger"
+                            onPress={() => {
+                              // Lógica para cancelar trato
+                              onClose();
+                            }}
+                          >
+                            Sí, cancelar
+                          </Button>
+                        </ModalFooter>
+                      </>
+                    )}
+                  </ModalContent>
+                </Modal>
 
                 {/* Messages */}
                 {loadingMessages ? (
@@ -263,7 +641,7 @@ const Chat: React.FC = () => {
                     Error: {errorMessages}
                   </div>
                 ) : (
-                  <div className="p-6 flex-grow overflow-auto">
+                  <div className="p-4 sm:p-6 flex-grow overflow-auto">
                     {messages.length > 0 ? (
                       <ul className="space-y-4">
                         {messages.map((message, index) => (
@@ -276,11 +654,11 @@ const Chat: React.FC = () => {
                             }`}
                           >
                             <div
-                              className={`inline-block mb-1.5 rounded-2xl px-5 py-4 ${
+                              className={`inline-block mb-1.5 rounded-2xl px-4 sm:px-5 py-3 sm:py-4 max-w-[80%] ${
                                 message.nickname === userName
                                   ? "bg-primary text-white rounded-br-none"
                                   : "bg-gray-200 dark:bg-strokedark rounded-tl-none"
-                              }`}
+                              } break-words`}
                             >
                               <p>{message.content}</p>
                             </div>
@@ -307,34 +685,26 @@ const Chat: React.FC = () => {
                           autoplay
                           speed={0.55}
                           style={{
-                            width: "80vw",
+                            width: "50vw",
                             maxWidth: "500px",
                             height: "auto",
-                            maxHeight: "400px",
+                            maxHeight: "250px",
                           }}
                         ></DotLottiePlayer>
-                        <h1 className="text-3xl font-bold text-black dark:text-slate-200 text-center">
-                          Conversa con tus futuros inquilinos
-                        </h1>
-                        <p className="text-lg text-gray-600 dark:text-gray-300 mt-2 text-center">
-                          Conéctate con estudiantes interesados, responde sus
-                          preguntas y facilita el proceso de renta de tus
-                          habitaciones.
-                        </p>
                       </div>
                     )}
                   </div>
                 )}
 
                 {/* Chat Input */}
-                <div className="border-t border-stroke p-5 dark:border-dark-3 dark:bg-gray-dark">
+                <div className="border-t border-stroke p-4 sm:p-5 dark:border-dark-3 dark:bg-gray-dark">
                   <form className="relative" onSubmit={handleSendMessage}>
                     <input
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       placeholder="Escribe tu mensaje..."
-                      className="w-full rounded-[7px] border-[1.5px] bg-slate-50  border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
+                      className="w-full rounded-full border-[1.5px] bg-slate-50 border-gray-4 bg-transparent px-5.5 py-3 text-dark outline-none transition focus:border-primary dark:focus:border-primary active:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:active:border-primary"
                     />
                     <button
                       className="absolute right-4 top-1/2 -translate-y-1/2"
