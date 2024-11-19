@@ -35,22 +35,22 @@ const menuGroups = [
         icon: (
           <FaGears />
         ),
-        label: "Administración",
+        label: "Tratos",
         route: "#",
         children: [
           { label: "Solicitudes", route: "/admin/requests" },
-          { label: "Chats", route: "/admin/chats" },
-          { label: "Recibos", route: "#" },
+          { label: "Chats activos", route: "/admin/chats" },
+          { label: "Tratos", route: "/admin/hirings" },
         ],
       },
       {
         icon: (
           <BsFileEarmarkBarGraphFill />
         ),
-        label: "Estadísticas",
+        label: "Administración",
         route: "#",
         children: [
-          { label: "Reportes", route: "#"},
+          { label: "Recibos", route: "#"},
           { label: "Graficas", route: "#" },
         ],
       },

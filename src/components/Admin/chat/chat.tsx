@@ -1,4 +1,3 @@
-// Chat.tsx
 "use client";
 import Image from "next/image";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
@@ -16,7 +15,7 @@ import {
 import { IoAttach, IoArrowBack } from "react-icons/io5";
 import { SlEmotsmile } from "react-icons/sl";
 import { CiMenuKebab } from "react-icons/ci";
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa"; // Íconos para las acciones
+import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { DotLottiePlayer } from "@dotlottie/react-player";
 import "@dotlottie/react-player/dist/index.css";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
@@ -36,16 +35,23 @@ import {
   DropdownTrigger,
   DropdownMenu,
   DropdownItem,
+  Checkbox,
 } from "@nextui-org/react";
+import { useToast } from "@chakra-ui/react";
+import { parseDate, getLocalTimeZone } from "@internationalized/date";
+import { RangeValue } from "@react-types/shared";
+import { DateValue } from "@react-types/datepicker";
 
 const Chat: React.FC = () => {
-  const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(new Set());
+  const [selectedRoomIds, setSelectedRoomIds] = useState<Set<string>>(
+    new Set()
+  );
   const [roomIdsToFilter, setRoomIdsToFilter] = useState<string[]>([]);
 
-  const { rooms, loading: roomsLoading, error: roomsError } = useGetAllRoomsChat();
-  const { chats, loading, error, userToken, userName, userId } = useGetChats(
-    roomIdsToFilter
-  );
+  const { rooms, loading: roomsLoading, error: roomsError } =
+    useGetAllRoomsChat();
+  const { chats, loading, error, userToken, userName, userId } =
+    useGetChats(roomIdsToFilter);
 
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -70,11 +76,20 @@ const Chat: React.FC = () => {
 
   // Estados para los inputs del modal
   const [habitants, setHabitants] = useState<number>(1);
-  const [monthlyPrice, setMonthlyPrice] = useState<string>("");
-  const [dateRange, setDateRange] = useState<any>(null);
+  const [monthlyPrice, setMonthlyPrice] = useState<number>(0);
+  const [depositRequired, setDepositRequired] = useState<boolean>(false);
+  const [depositAmount, setDepositAmount] = useState<number>(0);
+  const [dateRange, setDateRange] = useState<RangeValue<DateValue>>({
+    start: parseDate("2024-04-01"),
+    end: parseDate("2024-04-01"),
+  });
 
-  const socket = useRef(io("https://uniroom-backend-services.onrender.com")).current;
+  const socket = useRef(
+    io("https://uniroom-backend-services.onrender.com")
+  ).current;
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const toast = useToast();
 
   const onEmojiClick = (emojiObject: EmojiClickData) => {
     setNewMessage((prevMessage) => prevMessage + emojiObject.emoji);
@@ -83,7 +98,10 @@ const Chat: React.FC = () => {
 
   // Reset selectedChatId if it's not in the filtered chats
   useEffect(() => {
-    if (selectedChatId && !chats.find((chat) => chat.id === selectedChatId)) {
+    if (
+      selectedChatId &&
+      !chats.find((chat) => chat.id === selectedChatId)
+    ) {
       setSelectedChatId(null);
       setMessages([]);
     }
@@ -166,16 +184,87 @@ const Chat: React.FC = () => {
     setRoomIdsToFilter(Array.from(selectedRoomIds));
   };
 
-  // Manejo del formato de moneda MXN
-  const handlePriceChange = (value: string) => {
-    // Remover cualquier caracter que no sea dígito
-    const numericValue = value.replace(/\D/g, "");
-    // Formatear como moneda MXN
-    const formattedValue = new Intl.NumberFormat("es-MX", {
-      style: "currency",
-      currency: "MXN",
-    }).format(Number(numericValue) / 100);
-    setMonthlyPrice(formattedValue);
+  // Función para manejar la confirmación del trato
+  const handleConfirmDeal = async () => {
+    if (
+      !selectedChat ||
+      !dateRange.start ||
+      !dateRange.end ||
+      monthlyPrice <= 0
+    ) {
+      toast({
+        title: "Error",
+        description: "Por favor, completa todos los campos obligatorios.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Convertir las fechas a objetos Date
+    const startDate = dateRange.start.toDate(getLocalTimeZone());
+    const endDate = dateRange.end.toDate(getLocalTimeZone());
+
+    // Construir el payload para la API
+    const payload = {
+      token: userToken,
+      tenantId: selectedChat.participantDetails[1]?.id || "", // inquilino
+      roomId: selectedChat.roomId || "",
+      habitants: habitants,
+      monthlyPrice: monthlyPrice,
+      deposit: depositRequired ? depositAmount : 0,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+    };
+
+    console.log("Payload enviado:", payload);
+
+    try {
+      const response = await fetch(
+        "https://uruniroom.azurewebsites.net/api/Hirings/AddHiring",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Error al confirmar el trato."
+        );
+      }
+
+      // Si la respuesta es exitosa
+      toast({
+        title: "Éxito",
+        description: "El trato ha sido confirmado exitosamente.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      onConfirmModalOpenChange();
+
+      // Resetear los campos del modal
+      setHabitants(1);
+      setMonthlyPrice(0);
+      setDepositRequired(false);
+      setDepositAmount(0);
+      setDateRange({ start: parseDate("2024-04-01"), end: parseDate("2024-04-01") });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Error al confirmar el trato.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
   };
 
   if (loading || roomsLoading) {
@@ -224,7 +313,9 @@ const Chat: React.FC = () => {
                   size="sm"
                   selectedKeys={selectedRoomIds}
                   onSelectionChange={(keys) =>
-                    handleRoomChange(new Set(keys as unknown as string[]))
+                    handleRoomChange(
+                      new Set(keys as unknown as string[])
+                    )
                   }
                 >
                   {rooms.map((room) => (
@@ -250,7 +341,9 @@ const Chat: React.FC = () => {
                   <div
                     key={chat.id}
                     className={`flex cursor-pointer items-center rounded px-4 py-4 hover:bg-gray-2 dark:hover:bg-dark ${
-                      selectedChatId === chat.id ? "bg-gray-2 dark:bg-dark" : ""
+                      selectedChatId === chat.id
+                        ? "bg-gray-2 dark:bg-dark"
+                        : ""
                     }`}
                     onClick={() => handleChatSelect(chat.id)}
                   >
@@ -344,7 +437,11 @@ const Chat: React.FC = () => {
                     <div className="flex sm:hidden">
                       <Dropdown placement="bottom-end">
                         <DropdownTrigger>
-                          <Button isIconOnly variant="light" aria-label="Más opciones">
+                          <Button
+                            isIconOnly
+                            variant="light"
+                            aria-label="Más opciones"
+                          >
                             <CiMenuKebab size={24} />
                           </Button>
                         </DropdownTrigger>
@@ -353,7 +450,9 @@ const Chat: React.FC = () => {
                             key="confirm"
                             color="success"
                             description="Confirmar trato"
-                            startContent={<FaCheckCircle color="green" />}
+                            startContent={
+                              <FaCheckCircle color="green" />
+                            }
                             onClick={onConfirmModalOpen}
                           >
                             Confirmar trato
@@ -362,7 +461,9 @@ const Chat: React.FC = () => {
                             key="cancel"
                             color="danger"
                             description="Cancelar trato"
-                            startContent={<FaTimesCircle color="red" />}
+                            startContent={
+                              <FaTimesCircle color="red" />
+                            }
                             onClick={onCancelModalOpen}
                           >
                             Cancelar trato
@@ -388,8 +489,8 @@ const Chat: React.FC = () => {
                         </ModalHeader>
                         <ModalBody>
                           <p>
-                            ¿Estás seguro de que deseas confirmar el trato para la
-                            habitación{" "}
+                            ¿Estás seguro de que deseas confirmar el trato
+                            para la habitación{" "}
                             <strong className="text-primary">
                               {selectedChat.roomDetails.title}
                             </strong>{" "}
@@ -405,21 +506,54 @@ const Chat: React.FC = () => {
                               type="number"
                               min="1"
                               value={habitants.toString()}
-                              onChange={(e) => setHabitants(Number(e.target.value))}
+                              onChange={(e) =>
+                                setHabitants(Number(e.target.value))
+                              }
                               placeholder="Ingrese el número de habitantes"
                               startContent={<BiUser />}
                             />
                             <Input
                               label="Precio mensual"
-                              value={monthlyPrice}
-                              onChange={(e) => handlePriceChange(e.target.value)}
+                              type="number"
+                              min="0"
+                              value={monthlyPrice.toString()}
+                              onChange={(e) =>
+                                setMonthlyPrice(
+                                  e.target.value !== ""
+                                    ? Number(e.target.value)
+                                    : 0
+                                )
+                              }
                               placeholder="Ingrese el precio mensual"
                               startContent={<BiDollarCircle />}
                             />
+                            <Checkbox
+                              isSelected={depositRequired}
+                              onChange={(e) => setDepositRequired(e.target.checked)}
+                            >
+                              ¿Requiere depósito?
+                            </Checkbox>
+                            {depositRequired && (
+                              <Input
+                                label="Depósito"
+                                type="number"
+                                min="0"
+                                value={depositAmount.toString()}
+                                onChange={(e) =>
+                                  setDepositAmount(
+                                    e.target.value !== ""
+                                      ? Number(e.target.value)
+                                      : 0
+                                  )
+                                }
+                                placeholder="Ingrese el monto del depósito"
+                                startContent={<BiDollarCircle />}
+                              />
+                            )}
                             <DateRangePicker
                               label="Fechas de estancia"
                               value={dateRange}
-                              onChange={(value) => setDateRange(value)}
+                              onChange={setDateRange}
                               startContent={<BiCalendar />}
                               className="w-full cursor-pointer"
                               visibleMonths={1}
@@ -427,16 +561,18 @@ const Chat: React.FC = () => {
                           </div>
                         </ModalBody>
                         <ModalFooter>
-                          <Button color="danger" variant="flat" onPress={onClose}>
+                          <Button
+                            color="danger"
+                            variant="flat"
+                            onPress={onClose}
+                          >
                             Cancelar
                           </Button>
                           <Button
                             color="success"
                             onPress={() => {
-                              // Lógica para enviar datos a la API
-                              // Aquí puedes extraer las fechas de inicio y fin del dateRange
-                              // y construir el objeto para enviar a la API
-                              onClose();
+                              handleConfirmDeal();
+                              // No cerramos el modal aquí, lo haremos después de la respuesta de la API
                             }}
                           >
                             Confirmar
@@ -462,7 +598,8 @@ const Chat: React.FC = () => {
                         </ModalHeader>
                         <ModalBody>
                           <p>
-                            ¿Estás seguro de que deseas cancelar el trato con{" "}
+                            ¿Estás seguro de que deseas cancelar el trato
+                            con{" "}
                             <strong className="text-primary">
                               {selectedChat.participantDetails[1]?.name}
                             </strong>{" "}
@@ -474,7 +611,11 @@ const Chat: React.FC = () => {
                           </p>
                         </ModalBody>
                         <ModalFooter>
-                          <Button color="default" variant="flat" onPress={onClose}>
+                          <Button
+                            color="default"
+                            variant="flat"
+                            onPress={onClose}
+                          >
                             No
                           </Button>
                           <Button
