@@ -93,7 +93,7 @@ const TableRooms = () => {
 
     try {
       const response = await fetch(
-        "https://uruniroom.azurewebsites.net/api/Rooms/UpdateRoomStatus",
+        "https://uniroom.azurewebsites.net/api/Rooms/UpdateRoomStatus",
         {
           method: "POST",
           headers: {

@@ -55,7 +55,7 @@ const useGetRoomDetails = (roomId: number | null) => {
       setLoading(true);
 
       try {
-        const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/GetRoomDetails", {
+        const response = await fetch("https://uniroom.azurewebsites.net/api/Rooms/GetRoomDetails", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
