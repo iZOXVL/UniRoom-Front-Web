@@ -31,7 +31,7 @@ const useEditRoom = () => {
     setIsLoading(true);
   
     try {
-      const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/UpdateRoom", {
+      const response = await fetch("https://uniroom.azurewebsites.net/api/Rooms/UpdateRoom", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

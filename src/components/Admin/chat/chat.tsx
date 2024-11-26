@@ -222,7 +222,7 @@ const Chat: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://uruniroom.azurewebsites.net/api/Hirings/AddHiring",
+        "https://uniroom.azurewebsites.net/api/Hirings/AddHiring",
         {
           method: "POST",
           headers: {

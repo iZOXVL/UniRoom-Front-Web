@@ -31,7 +31,7 @@ const useGetHirings = (pageNumber: number, pageSize: number) => {
 
       try {
         const response = await fetch(
-          "https://uruniroom.azurewebsites.net/api/Hirings/GetHiringsByLandlord",
+          "https://uniroom.azurewebsites.net/api/Hirings/GetHiringsByLandlord",
           {
             method: "POST",
             headers: {

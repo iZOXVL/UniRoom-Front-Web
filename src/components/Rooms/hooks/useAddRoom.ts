@@ -30,7 +30,7 @@ const useAddRoom = () => {
     setIsLoading(true);
   
     try {
-      const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/AddRoom", {
+      const response = await fetch("https://uniroom.azurewebsites.net/api/Rooms/AddRoom", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

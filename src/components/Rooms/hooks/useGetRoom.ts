@@ -26,7 +26,7 @@ const useGetRooms = (pageNumber: number, pageSize: number) => {
       setLoading(true);
 
       try {
-        const response = await fetch("https://uruniroom.azurewebsites.net/api/Rooms/GetRoomLandLord", {
+        const response = await fetch("https://uniroom.azurewebsites.net/api/Rooms/GetRoomLandLord", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
