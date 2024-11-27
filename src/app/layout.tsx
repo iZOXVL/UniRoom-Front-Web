@@ -19,7 +19,7 @@ export default async function RootLayout({
     <SessionProvider session={session}>
       <html lang="en">
       <head>
-  {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "production") && (
+  {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
     // eslint-disable-next-line @next/next/no-sync-scripts
     <script
       data-recording-token="myydDlmA2lyTeQW3awBzZlOhSXpM7P3NIxxinCw5"
