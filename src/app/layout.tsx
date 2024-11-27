@@ -18,6 +18,16 @@ export default async function RootLayout({
   return (
     <SessionProvider session={session}>
       <html lang="en">
+      <head>
+  {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "production") && (
+    // eslint-disable-next-line @next/next/no-sync-scripts
+    <script
+      data-recording-token="myydDlmA2lyTeQW3awBzZlOhSXpM7P3NIxxinCw5"
+      data-is-production-environment="false"
+      src="https://snippet.meticulous.ai/v1/meticulous.js"
+    />
+  )}
+</head>
         <body style={{ fontFamily: 'Satoshi, sans-serif' }}>
           <Toaster />
           {children}
