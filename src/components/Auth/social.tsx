@@ -41,9 +41,9 @@ export const Social = () => {
   };
 
   return (
-    <div className=" items-center w-100 gap-x-1.5">
+    <div className=" items-center w-full gap-x-1.5">
       <motion.div variants={item}>
-        <Button type="button" size="sm" className="w-100 h-12 hover:bg-primary-50" variant="outline" onClick={(event) => OnClick("google", event)}>
+        <Button type="button" size="sm" className="w-full h-12 hover:bg-primary-50" variant="outline" onClick={(event) => OnClick("google", event)}>
           <FcGoogle className="h-5 w-5 mr-2" /> Iniciar con Google
         </Button>
       </motion.div>

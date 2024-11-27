@@ -14,7 +14,7 @@ const useUploadMedia = () => {
     videos.forEach((video) => formData.append("VideoAggregates.Videos", video));
 
     try {
-      const response = await fetch("https://uruniroom.azurewebsites.net/api/Multimedia/AddMultimedia", {
+      const response = await fetch("https://uniroom.azurewebsites.net/api/Multimedia/AddMultimedia", {
         method: "POST",
         body: formData,
       });
