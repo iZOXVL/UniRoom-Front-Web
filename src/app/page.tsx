@@ -11,7 +11,7 @@ import SparklesText from "@/components/ui/sparkles-text";
 
 export default function Home() {
   const [formType, setFormType] = useState<'login' | 'register' | 'reset'>('login');
-
+//jsx
   return (
     <main className="flex flex-col md:flex-row min-h-screen">
       {/* Columna izquierda */}
