@@ -80,6 +80,8 @@ export const login = async (values: z.infer<typeof LoginSchema>, callbackUrl?: s
       if (existingConfirmation) {
         await db.twoFactorConfirmation.delete({ where: { id: existingConfirmation.id } }); // Elimina la confirmación existente
       }
+
+      
     
       await db.twoFactorConfirmation.create({ // Crea una nueva confirmación de 2FA
         data: {
