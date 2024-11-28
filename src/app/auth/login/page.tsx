@@ -3,9 +3,9 @@
 
 const LoginPage = () => {
     return (  
-      <LoginForm>
+      <LoginFor>
         
-      </LoginForm>
+      </LoginFor>
     );
 }
  
