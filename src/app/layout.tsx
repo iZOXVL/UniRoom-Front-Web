@@ -16,10 +16,11 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
+    //PRUEBA
     <SessionProvider session={session}>
       <html lang="en">
       <head>
-  {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "production") && (
+  {(process.env.NODE_ENV === "development" || process.env.VERCEL_ENV === "preview") && (
     // eslint-disable-next-line @next/next/no-sync-scripts
     <script
       data-recording-token="myydDlmA2lyTeQW3awBzZlOhSXpM7P3NIxxinCw5"
@@ -28,6 +29,7 @@ export default async function RootLayout({
     />
   )}
 </head>
+
         <body style={{ fontFamily: 'Satoshi, sans-serif' }}>
           <Toaster />
           {children}

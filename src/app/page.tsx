@@ -57,10 +57,10 @@ export default function Home() {
             {formType === 'login' && (
               <div className="flex flex-col items-center">
                 <Button variant="link" onClick={() => setFormType('register')} className="text-sm text-gray-500 hover:underline md:text-[#D2DBE1]">
-                  ¿No tienes cuenta? Regístrate aquí.
+                  ¿No tienes cuenta? Regístrate.
                 </Button>
                 <Button variant="link" onClick={() => setFormType('reset')} className="text-sm text-gray-500 hover:underline md:text-[#D2DBE1]">
-                  ¿Olvidaste tu contraseña? Restablecer aquí.
+                  ¿Olvidaste tu contraseña? Restablecer.
                 </Button>
               </div>
             )}
