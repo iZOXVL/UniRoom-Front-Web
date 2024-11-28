@@ -16,6 +16,7 @@ export default async function RootLayout({
   const session = await auth();
 
   return (
+    //PRUEBA
     <SessionProvider session={session}>
       <html lang="en">
       <head>
@@ -28,6 +29,7 @@ export default async function RootLayout({
     />
   )}
 </head>
+
         <body style={{ fontFamily: 'Satoshi, sans-serif' }}>
           <Toaster />
           {children}
